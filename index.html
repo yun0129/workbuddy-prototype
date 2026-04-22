@@ -101,14 +101,10 @@ body {
 
 /* 内容滚动区域 */
 .scroll-area {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -177,7 +173,7 @@ body {
 .tab-item .icon { font-size: 22px; }
 
 /* scroll content area */
-.content-area { overflow-y: auto; padding-bottom: 70px; }
+.content-area { overflow-y: auto; flex: 1; min-height: 0; }
 
 /* 通用组件 */
 .btn {
@@ -1287,7 +1283,7 @@ body {
           <div class="step-label" style="margin-top:3px;">等待接单</div>
         </div>
       </div>
-      <div class="content-area" style="padding:14px;flex:1;min-height:0;overflow-y:auto;">
+      <div class="content-area" style="padding:14px;">
         <div class="card">
           <div style="font-size:14px;font-weight:600;margin-bottom:10px;">选择服务类型 <span style="color:var(--red)">*</span></div>
           <div class="category-grid" style="gap:8px;">
