@@ -536,6 +536,21 @@ body {
   color: var(--primary);
 }
 
+/* 服务子类展开列表 */
+.sub-list { display: none; padding: 10px 0 4px; }
+.sub-list.active { display: block; }
+.sub-item {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid transparent;
+}
+.sub-item:hover { background: #f5f5f5; }
+.sub-item.selected { background: #eef3fb; border-color: var(--primary); color: var(--primary); font-weight: 600; }
+
 /* 首页 */
 .home-banner { background: linear-gradient(120deg, #4A90E2, #2c6fba); padding: 18px 16px; color: #fff; }
 .home-banner h2 { font-size: 18px; font-weight: 700; }
@@ -1268,18 +1283,62 @@ body {
       <div class="content-area" style="padding:14px;">
         <div class="card">
           <div style="font-size:14px;font-weight:600;margin-bottom:10px;">选择服务类型 <span style="color:var(--red)">*</span></div>
-          <div class="category-grid">
-            <div class="category-chip selected" onclick="selectCat(this)"><span class="chip-icon">📱</span>数字助老</div>
-            <div class="category-chip" onclick="selectCat(this)"><span class="chip-icon">🔧</span>家居维修</div>
-            <div class="category-chip" onclick="selectCat(this)"><span class="chip-icon">🍳</span>生活照料</div>
-            <div class="category-chip" onclick="selectCat(this)"><span class="chip-icon">🏥</span>就医陪护</div>
-            <div class="category-chip" onclick="selectCat(this)"><span class="chip-icon">🚗</span>出行协助</div>
-            <div class="category-chip" onclick="selectCat(this)"><span class="chip-icon">💬</span>精神关怀</div>
+          <div class="category-grid" style="gap:8px;">
+            <div class="category-chip selected" data-cat="数字助老" onclick="selectCat(this)"><span class="chip-icon">📱</span>数字助老</div>
+            <div class="category-chip" data-cat="家居维修" onclick="selectCat(this)"><span class="chip-icon">🔧</span>家居维修</div>
+            <div class="category-chip" data-cat="生活照料" onclick="selectCat(this)"><span class="chip-icon">🍳</span>生活照料</div>
+            <div class="category-chip" data-cat="就医陪同" onclick="selectCat(this)"><span class="chip-icon">🏥</span>就医陪同</div>
+            <div class="category-chip" data-cat="出行协助" onclick="selectCat(this)"><span class="chip-icon">🚗</span>出行协助</div>
+            <div class="category-chip" data-cat="精神关怀" onclick="selectCat(this)"><span class="chip-icon">💬</span>精神关怀</div>
+            <div class="category-chip" data-cat="应急协助" onclick="selectCat(this)"><span class="chip-icon">🚨</span>应急协助</div>
+          </div>
+          <!-- 服务子类 -->
+          <div id="cat-subs" style="margin-top:12px;">
+            <!-- 数字助老 -->
+            <div class="sub-list active" data-sub="数字助老">
+              <div class="sub-item selected" onclick="selectSub(this,'数字助老 · 智能设备教学','¥80')">智能设备教学（手机/平板/电视）</div>
+              <div class="sub-item" onclick="selectSub(this,'数字助老 · 常用软件指导','¥60')">常用软件指导（微信聊天、视频通话、防诈APP）</div>
+              <div class="sub-item" onclick="selectSub(this,'数字助老 · 网络与账号服务','¥50')">网络与账号服务（WiFi连接、打印机设置、密码重置）</div>
+            </div>
+            <!-- 家居维修 -->
+            <div class="sub-list" data-sub="家居维修">
+              <div class="sub-item" onclick="selectSub(this,'家居维修 · 水电暖维修','¥120')">水电暖维修（水管疏通、灯具更换、插座维修）</div>
+              <div class="sub-item" onclick="selectSub(this,'家居维修 · 家电维修','¥150')">家电维修（电视、冰箱、洗衣机故障排查）</div>
+              <div class="sub-item" onclick="selectSub(this,'家居维修 · 适老化改造','¥200')">适老化改造（防滑垫铺设、无障碍坡道、安全扶手安装）</div>
+              <div class="sub-item" onclick="selectSub(this,'家居维修 · 家政保养','¥100')">家政保养（深度保洁、油烟机清洗）</div>
+            </div>
+            <!-- 生活照料 -->
+            <div class="sub-list" data-sub="生活照料">
+              <div class="sub-item" onclick="selectSub(this,'生活照料 · 助餐服务','¥60')">助餐服务（上门做饭、营养配餐配送、代买净菜）</div>
+              <div class="sub-item" onclick="selectSub(this,'生活照料 · 助洁服务','¥80')">助洁服务（日常保洁、衣物清洗与缝补、窗帘地毯清洗）</div>
+              <div class="sub-item" onclick="selectSub(this,'生活照料 · 助浴与理发','¥70')">助浴与理发（上门助浴、理发、剪指甲）</div>
+            </div>
+            <!-- 就医陪同 -->
+            <div class="sub-list" data-sub="就医陪同">
+              <div class="sub-item" onclick="selectSub(this,'就医陪同 · 日常健康管理','¥50')">日常健康管理（血压/血糖测量、用药提醒）</div>
+              <div class="sub-item" onclick="selectSub(this,'就医陪同 · 就医陪诊','¥150')">就医陪诊（预约挂号、陪同就诊、取送报告、代取药品）</div>
+              <div class="sub-item" onclick="selectSub(this,'就医陪同 · 康复理疗','¥180')">康复理疗（上门按摩、针灸、术后康复训练）</div>
+            </div>
+            <!-- 出行协助 -->
+            <div class="sub-list" data-sub="出行协助">
+              <div class="sub-item" onclick="selectSub(this,'出行协助 · 出行陪同','¥80')">出行陪同（陪同买菜、逛公园、银行办事）</div>
+              <div class="sub-item" onclick="selectSub(this,'出行协助 · 专属用车','¥120')">专属用车（老年版专车接送、火车站/机场接送）</div>
+              <div class="sub-item" onclick="selectSub(this,'出行协助 · 生活代办','¥50')">生活代办（代缴水电煤、取送快递、证件照拍摄）</div>
+            </div>
+            <!-- 精神关怀 -->
+            <div class="sub-list" data-sub="精神关怀">
+              <div class="sub-item" onclick="selectSub(this,'精神关怀 · 志愿探访','¥0')">志愿探访（定期上门慰问、生日关怀）</div>
+            </div>
+            <!-- 应急协助 -->
+            <div class="sub-list" data-sub="应急协助">
+              <div class="sub-item" onclick="selectSub(this,'应急协助 · 突发疾病陪护','¥200')">突发疾病陪护</div>
+              <div class="sub-item" onclick="selectSub(this,'应急协助 · 紧急上门探视','¥180')">紧急上门探视</div>
+            </div>
           </div>
           <div style="margin-top:10px;">
             <label class="label">具体需求描述</label>
             <div style="background:#f5f5f5;border-radius:8px;padding:10px;display:flex;align-items:center;gap:6px;">
-              <input style="flex:1;border:none;background:transparent;font-size:14px;outline:none;" placeholder="妈妈想学习微信视频通话..." />
+              <input id="demand-input" style="flex:1;border:none;background:transparent;font-size:14px;outline:none;" placeholder="妈妈想学习微信视频通话..." />
               <span style="font-size:20px;cursor:pointer;color:var(--primary)">🎤</span>
             </div>
             <div class="annotation">支持语音输入，方便老人自行填写</div>
@@ -1946,6 +2005,30 @@ function toggleCat(el, certType) {
 function selectCat(el) {
   document.querySelectorAll('#s-order-new .category-chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+  var cat = el.dataset.cat;
+  document.querySelectorAll('.sub-list').forEach(s => s.classList.remove('active'));
+  var target = document.querySelector('.sub-list[data-sub="' + cat + '"]');
+  if (target) target.classList.add('active');
+  // 重置选中子项
+  document.querySelectorAll('.sub-item').forEach(i => i.classList.remove('selected'));
+  updatePriceSummary(cat + ' · 请选择具体服务', '¥—');
+}
+
+function selectSub(el, label, price) {
+  document.querySelectorAll('.sub-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePriceSummary(label, price);
+}
+
+function updatePriceSummary(label, price) {
+  var row = document.querySelector('.price-summary .price-row:first-child');
+  if (row) row.innerHTML = '<span>' + label + '</span><span>' + price + '</span>';
+  // 更新合计（如果有优惠券逻辑简单处理）
+  var totalEl = document.querySelector('.price-total');
+  if (totalEl && price !== '¥—') {
+    var num = parseInt(price.replace('¥',''));
+    totalEl.textContent = '¥' + (num > 0 ? num - 10 : 0);
+  }
 }
 
 function toggleTimeSlot(el) {
