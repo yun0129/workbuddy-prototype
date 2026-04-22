@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "sessions": {
+    "48415a5266264351b343b5ffb8e0e0d8": [
+      {
+        "expertId": "RapidPrototypingEngineer",
+        "name": "闪造造",
+        "profession": "快速原型工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/RapidPrototypingEngineer/RapidPrototypingEngineer_zh.md",
+        "usedAt": 1776754578442,
+        "industryId": "02-Engineering"
+      }
+    ]
+  },
+  "lastUpdated": 1776775803112
+}
