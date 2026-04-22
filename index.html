@@ -1293,7 +1293,7 @@ body {
             <div class="category-chip" data-cat="应急协助" onclick="selectCat(this)"><span class="chip-icon">🚨</span>应急协助</div>
           </div>
           <!-- 服务子类 -->
-          <div id="cat-subs" style="margin-top:12px;">
+          <div id="cat-subs">
             <!-- 数字助老 -->
             <div class="sub-list active" data-sub="数字助老">
               <div class="sub-item selected" onclick="selectSub(this,'数字助老 · 智能设备教学','¥80')">智能设备教学（手机/平板/电视）</div>
@@ -1417,12 +1417,7 @@ body {
             <button class="btn btn-primary" onclick="closeModal('modal-pay');showScreen('s-orders')">立即支付</button>
           </div>
         </div>
-        <div class="tab-bar">
-          <div class="tab-item" onclick="showScreen('s-home')"><div class="icon">🏠</div>首页</div>
-          <div class="tab-item active"><div class="icon">➕</div>发起服务</div>
-          <div class="tab-item" onclick="showScreen('s-orders')"><div class="icon">📋</div>我的服务单</div>
-          <div class="tab-item" onclick="showScreen('s-profile-user')"><div class="icon">👤</div>我的</div>
-        </div>
+        <div class="tab-bar" style="display:none;"></div>
       </div>
     </div>
   </div>
