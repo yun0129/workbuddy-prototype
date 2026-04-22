@@ -1386,14 +1386,25 @@ body {
             <span style="font-size:13px;color:var(--primary);cursor:pointer;">+ 新增地址</span>
           </div>
         </div>
-        <div class="price-summary">
-          <div class="price-row"><span>数字助老 · 手机使用指导</span><span>¥80</span></div>
-          <div class="price-row"><span>优惠券</span><span style="color:var(--green)">-¥10</span></div>
-          <div class="divider"></div>
-          <div class="price-row"><span style="font-weight:600;">合计</span><span class="price-total">¥70</span></div>
-          <div class="annotation">上门后如实际服务时间超出，按 ¥30/半小时 追加</div>
+        <!-- 吸底价格区 -->
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;z-index:10;">
+          <div style="padding:10px 14px 6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="font-size:13px;color:var(--sub);">费用明细</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;">
+              <span id="price-label">数字助老 · 智能设备教学</span>
+              <span id="price-amount" style="font-weight:700;color:var(--orange);font-size:18px;">¥80</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:2px;">
+              <span>优惠</span><span style="color:var(--green);">-¥10</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:2px;">
+              <span>上门后按 ¥30/半小时 追加</span><span></span>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;border-radius:0;" onclick="showOrderConfirm()">确认下单 · 去支付</button>
         </div>
-        <button class="btn btn-primary" style="margin-top:4px;" onclick="showOrderConfirm()">确认下单 · 去支付</button>
         <!-- 支付弹层 -->
         <div class="modal-overlay" id="modal-pay" style="display:none" onclick="closeModal('modal-pay')">
           <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -1413,7 +1424,7 @@ body {
                 <div style="flex:1;"><div style="font-size:14px;font-weight:600;">家属代付</div><div style="font-size:12px;color:var(--sub);">账单发送给子女确认后支付</div></div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px;">¥70</div>
+            <div id="pay-modal-price" style="font-size:22px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px;">¥70</div>
             <button class="btn btn-primary" onclick="closeModal('modal-pay');showScreen('s-orders')">立即支付</button>
           </div>
         </div>
@@ -2016,13 +2027,12 @@ function selectSub(el, label, price) {
 }
 
 function updatePriceSummary(label, price) {
-  var row = document.querySelector('.price-summary .price-row:first-child');
-  if (row) row.innerHTML = '<span>' + label + '</span><span>' + price + '</span>';
-  // 更新合计（如果有优惠券逻辑简单处理）
-  var totalEl = document.querySelector('.price-total');
-  if (totalEl && price !== '¥—') {
+  var labelEl = document.getElementById('price-label');
+  var amountEl = document.getElementById('price-amount');
+  if (labelEl) labelEl.textContent = label;
+  if (amountEl && price !== '¥—') {
     var num = parseInt(price.replace('¥',''));
-    totalEl.textContent = '¥' + (num > 0 ? num - 10 : 0);
+    amountEl.textContent = price;
   }
 }
 
@@ -2037,6 +2047,9 @@ function switchOrderTab(el) {
 }
 
 function showOrderConfirm() {
+  var amt = document.getElementById('price-amount');
+  var modalPrice = document.getElementById('pay-modal-price');
+  if (amt && modalPrice) modalPrice.textContent = amt.textContent;
   document.getElementById('modal-pay').style.display = 'flex';
 }
 
