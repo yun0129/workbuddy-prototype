@@ -1386,8 +1386,8 @@ body {
             <span style="font-size:13px;color:var(--primary);cursor:pointer;">+ 新增地址</span>
           </div>
         </div>
-        <!-- 吸底价格区 -->
-        <div style="position:sticky;bottom:0;background:#fff;z-index:10;margin:8px -14px 0;">
+        <!-- 吸底价格区（移到scroll-area内，用fixed精确对齐手机屏） -->
+        <div id="order-footer-fixed" style="position:fixed;left:calc(50% - 196.5px);width:393px;bottom:0;background:#fff;z-index:9999;">
           <div style="padding:8px 14px 4px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <span id="price-label">数字助老 · 智能设备教学</span>
