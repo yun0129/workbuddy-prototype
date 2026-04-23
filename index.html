@@ -553,6 +553,22 @@ body {
 .sub-item:hover { background: #f5f5f5; }
 .sub-item.selected { background: #eef3fb; border-color: var(--primary); color: var(--primary); font-weight: 600; }
 
+/* 服务对象选择卡片 */
+.service-target-card {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+}
+.service-target-card.selected {
+  border-color: var(--primary);
+  background: #eef3fb;
+}
+.service-target-card.selected div { color: var(--primary); }
+
 /* 首页 */
 .home-banner { background: linear-gradient(120deg, #4A90E2, #2c6fba); padding: 18px 16px; color: #fff; }
 .home-banner h2 { font-size: 18px; font-weight: 700; }
@@ -1348,17 +1364,17 @@ body {
         </div>
         <div class="card">
           <div style="font-size:14px;font-weight:600;margin-bottom:10px;">服务对象 <span style="color:var(--red)">*</span></div>
-          <div style="display:flex;gap:10px;">
-            <div style="flex:1;border:1.5px solid var(--primary);border-radius:10px;padding:10px;text-align:center;background:#eef3fb;cursor:pointer;">
+          <div style="display:flex;gap:10px;" id="service-target-group">
+            <div class="service-target-card selected" onclick="selectTarget(this)">
               <div style="font-size:20px;">🙋</div>
               <div style="font-size:13px;font-weight:600;margin-top:4px;">本人</div>
             </div>
-            <div style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;">
+            <div class="service-target-card" onclick="selectTarget(this)">
               <div style="font-size:20px;">👵</div>
               <div style="font-size:13px;font-weight:600;margin-top:4px;">妈妈</div>
               <div style="font-size:11px;color:var(--sub);">常州家中</div>
             </div>
-            <div style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;">
+            <div class="service-target-card" onclick="selectTarget(this)">
               <div style="font-size:20px;">👴</div>
               <div style="font-size:13px;font-weight:600;margin-top:4px;">爸爸</div>
               <div style="font-size:11px;color:var(--sub);">常州家中</div>
@@ -2006,6 +2022,11 @@ function toggleCat(el, certType) {
   idcardCert.style.display = needIdcard ? 'block' : 'none';
   licenseCert.style.display = needLicense ? 'block' : 'none';
   healthCert.style.display = needHealth ? 'block' : 'none';
+}
+
+function selectTarget(el) {
+  document.querySelectorAll('#service-target-group .service-target-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 function selectCat(el) {
