@@ -843,7 +843,7 @@ body {
 
 /* 弹层 */
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.45);
   z-index: 1000;
@@ -854,11 +854,12 @@ body {
 .modal-sheet {
   background: #fff;
   border-radius: 20px 20px 0 0;
-  padding: 20px 20px 32px;
+  padding: 20px 20px 24px;
   width: 100%;
   max-width: 375px;
-  max-height: 80vh;
+  max-height: 75%;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; text-align: center; }
 .modal-close {
