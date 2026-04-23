@@ -1493,22 +1493,26 @@ body {
         </div>
         <!-- 支付弹层 -->
         <div class="modal-overlay" id="modal-pay" style="display:none;align-items:flex-end;" onclick="closeModal('modal-pay')">
-          <div class="modal-sheet" onclick="event.stopPropagation()" style="background:#fff;">
+          <div class="modal-sheet" onclick="event.stopPropagation()" style="background:#fff;border-radius:20px 20px 0 0;width:100%;padding:20px 20px 16px;">
             <div class="modal-title">选择支付方式 <span class="modal-close" onclick="closeModal('modal-pay')">×</span></div>
             <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-              <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--primary);border-radius:10px;background:#eef3fb;">
-
-                <span style="font-size:22px;">💚</span>
+              <!-- 微信支付 -->
+              <div data-pay="wechat" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--primary);border-radius:10px;background:#eef3fb;cursor:pointer;" onclick="payNow('wechat', this)">
+                <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#07C160"/><path d="M9.5 10.5c.5-1 2.5-.5 4-.3-.2 1.2-.7 2.3-.8 3.5-.6-.3-.5-1-.7-1.5-.7.7-1.8.3-2.5-.5v-.2zm7.5 1c1-.4 1.5.5 2.2.7-.2 1.5-1.5 2.3-2.3 3.4-.5-.6-.3-1.8-1-2.1-.5-.5-1.3-.7-1.5-1.4.8.3 1.7.2 2.3-.2h.3zm-5 1c.6-.6 1.2-1.3 2-1.6.5.8 1.2 1.5 1.5 2.5-1.2.6-2.3 1-3.5 1.4v-2.3z" fill="#fff"/><path d="M10 17c.5 1.3 1.2 2.5 2 3.5 1-.4 2-.9 2.8-1.5-.3-1-.8-1.8-1-2.8-.6.2-1.3.5-1.8.5-.7 0-1.3-.3-2-.3v.6zm7-1c.5.7 1 1.5 1.8 2 .8-.8 1.4-1.7 2-2.7-.8-.6-1.6-1-2.5-1.4-.7 1-1.5 1.5-1.3 2.1z" fill="#fff"/></svg>
                 <div style="flex:1;"><div style="font-size:14px;font-weight:600;">微信支付</div></div>
-                <span style="font-size:18px;color:var(--primary);">✓</span>
+                <span class="pay-check" style="font-size:18px;color:var(--primary);">✓</span>
               </div>
-              <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;">
-                <span style="font-size:22px;">💙</span>
+              <!-- 支付宝 -->
+              <div data-pay="alipay" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;" onclick="payNow('alipay', this)">
+                <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#1677FF"/><text x="14" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial">支</text></svg>
                 <div style="flex:1;"><div style="font-size:14px;font-weight:600;">支付宝</div></div>
+                <span class="pay-check" style="font-size:18px;color:var(--primary);display:none;">✓</span>
               </div>
-              <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;">
-                <span style="font-size:22px;">👨‍👩‍👧</span>
+              <!-- 家属代付 -->
+              <div data-pay="family" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;" onclick="payNow('family', this)">
+                <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fa8c16"/><circle cx="10" cy="12" r="2.5" fill="#fff"/><circle cx="18" cy="12" r="2.5" fill="#fff"/><circle cx="14" cy="17" r="2.5" fill="#fff"/></svg>
                 <div style="flex:1;"><div style="font-size:14px;font-weight:600;">家属代付</div><div style="font-size:12px;color:var(--sub);">账单发送给子女确认后支付</div></div>
+                <span class="pay-check" style="font-size:18px;color:var(--primary);display:none;">✓</span>
               </div>
             </div>
             <div id="pay-modal-price" style="font-size:22px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px;">¥70</div>
@@ -2565,6 +2569,20 @@ function showOrderConfirm() {
   var modalPrice = document.getElementById('pay-modal-price');
   if (amt && modalPrice) modalPrice.textContent = amt.textContent;
   document.getElementById('modal-pay').style.display = 'flex';
+}
+
+function payNow(method, el) {
+  var payItems = document.querySelectorAll('#modal-pay [data-pay]');
+  payItems.forEach(function(item) {
+    item.style.borderColor = 'var(--border)';
+    item.style.background = '#fff';
+    var check = item.querySelector('.pay-check');
+    if (check) check.style.display = 'none';
+  });
+  el.style.borderColor = 'var(--primary)';
+  el.style.background = '#eef3fb';
+  var chk = el.querySelector('.pay-check');
+  if (chk) chk.style.display = '';
 }
 
 function closeModal(id) {
