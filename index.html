@@ -1493,7 +1493,7 @@ body {
         </div>
         <!-- 支付弹层 -->
         <div class="modal-overlay" id="modal-pay" style="display:none;align-items:flex-end;" onclick="closeModal('modal-pay')">
-          <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div class="modal-sheet" onclick="event.stopPropagation()" style="background:#fff;">
             <div class="modal-title">选择支付方式 <span class="modal-close" onclick="closeModal('modal-pay')">×</span></div>
             <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
               <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--primary);border-radius:10px;background:#eef3fb;">
@@ -1517,7 +1517,7 @@ body {
         </div>
         <!-- 自定义时间选择弹层 -->
         <div class="modal-overlay" id="modal-timepicker" style="display:none;align-items:flex-end;" onclick="closeModal('modal-timepicker')">
-          <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom:24px;">
+          <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom:24px;background:#fff;">
             <div class="modal-title">选择服务时间 <span class="modal-close" onclick="closeModal('modal-timepicker')">×</span></div>
 
             <!-- 步骤指示 -->
