@@ -569,6 +569,21 @@ body {
 }
 .service-target-card.selected div { color: var(--primary); }
 
+/* 时间选择器 日期/时间格子 */
+.tp-cell {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: all .15s;
+}
+.tp-cell:hover { background: #f5f5f5; }
+.tp-cell.selected { border-color: var(--primary); background: #eef3fb; color: var(--primary); font-weight: 600; }
+.tp-cell.disabled { opacity: .35; pointer-events: none; }
+
 /* 首页 */
 .home-banner { background: linear-gradient(120deg, #4A90E2, #2c6fba); padding: 18px 16px; color: #fff; }
 .home-banner h2 { font-size: 18px; font-weight: 700; }
@@ -1384,10 +1399,10 @@ body {
         <div class="card">
           <div style="font-size:14px;font-weight:600;margin-bottom:10px;">服务时间 <span style="color:var(--red)">*</span></div>
           <div class="time-slots">
-            <div class="time-slot selected" onclick="toggleTimeSlot(this)">🔥 立即上门<br><span style="font-size:11px;color:var(--sub)">30分钟内</span></div>
+            <div class="time-slot" onclick="toggleTimeSlot(this)">🔥 立即上门<br><span style="font-size:11px;color:var(--sub)">30分钟内</span></div>
             <div class="time-slot" onclick="toggleTimeSlot(this)">📅 今天下午<br><span style="font-size:11px;color:var(--sub)">14:00–18:00</span></div>
             <div class="time-slot" onclick="toggleTimeSlot(this)">📅 明天上午<br><span style="font-size:11px;color:var(--sub)">09:00–12:00</span></div>
-            <div class="time-slot" onclick="toggleTimeSlot(this)">🗓️ 自定义时间</div>
+            <div class="time-slot" id="slot-custom" onclick="openTimePicker(this)">🗓️ 自定义时间</div>
           </div>
         </div>
         <div class="card">
@@ -1427,6 +1442,7 @@ body {
             <div class="modal-title">选择支付方式 <span class="modal-close" onclick="closeModal('modal-pay')">×</span></div>
             <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
               <div style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--primary);border-radius:10px;background:#eef3fb;">
+
                 <span style="font-size:22px;">💚</span>
                 <div style="flex:1;"><div style="font-size:14px;font-weight:600;">微信支付</div></div>
                 <span style="font-size:18px;color:var(--primary);">✓</span>
@@ -1442,6 +1458,36 @@ body {
             </div>
             <div id="pay-modal-price" style="font-size:22px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px;">¥70</div>
             <button class="btn btn-primary" onclick="closeModal('modal-pay');showScreen('s-orders')">立即支付</button>
+          </div>
+        </div>
+        <!-- 自定义时间选择弹层 -->
+        <div class="modal-overlay" id="modal-timepicker" style="display:none" onclick="closeModal('modal-timepicker')">
+          <div class="modal-sheet" onclick="event.stopPropagation()" style="padding-bottom:24px;">
+            <div class="modal-title">选择服务时间 <span class="modal-close" onclick="closeModal('modal-timepicker')">×</span></div>
+
+            <!-- 步骤指示 -->
+            <div id="tp-step-bar" style="display:flex;gap:0;margin-bottom:18px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);">
+              <div id="tp-step1-tab" style="flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:600;background:var(--primary);color:#fff;cursor:pointer;" onclick="tpGoStep(1)">① 选日期</div>
+              <div id="tp-step2-tab" style="flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:600;background:#f5f5f5;color:var(--sub);cursor:pointer;" onclick="tpGoStep(2)">② 选时间</div>
+            </div>
+
+            <!-- Step 1：日期选择 -->
+            <div id="tp-step1">
+              <div style="font-size:13px;color:var(--sub);margin-bottom:10px;">选择上门日期（今天及以后）</div>
+              <div id="tp-date-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+            </div>
+
+            <!-- Step 2：时间选择 -->
+            <div id="tp-step2" style="display:none;">
+              <div style="font-size:13px;color:var(--sub);margin-bottom:10px;">选择上门时间（整点）</div>
+              <div id="tp-time-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+            </div>
+
+            <!-- 底部确认 -->
+            <div style="margin-top:20px;display:flex;align-items:center;justify-content:space-between;">
+              <div id="tp-preview" style="font-size:14px;color:var(--text);">请先选择日期</div>
+              <button id="tp-confirm-btn" class="btn btn-primary" style="width:auto;padding:10px 24px;font-size:14px;" disabled onclick="confirmTimePicker()">确认</button>
+            </div>
           </div>
         </div>
         <div class="tab-bar" style="display:none;"></div>
@@ -2062,6 +2108,142 @@ function toggleTimeSlot(el) {
   el.classList.add('selected');
 }
 
+/* ===== 自定义时间选择器 ===== */
+var _tpSelectedDate = null; // 'YYYY-MM-DD'
+var _tpSelectedHour = null; // 0-23
+
+function openTimePicker(el) {
+  // 先高亮 slot（点击时视觉反馈）
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+
+  // 初始化状态
+  _tpSelectedDate = null;
+  _tpSelectedHour = null;
+  tpGoStep(1);
+  _buildDateGrid();
+  _updateTpPreview();
+
+  document.getElementById('tp-confirm-btn').disabled = true;
+  document.getElementById('modal-timepicker').style.display = 'flex';
+}
+
+function tpGoStep(n) {
+  document.getElementById('tp-step1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('tp-step2').style.display = n === 2 ? 'block' : 'none';
+  var t1 = document.getElementById('tp-step1-tab');
+  var t2 = document.getElementById('tp-step2-tab');
+  if (n === 1) {
+    t1.style.background = 'var(--primary)'; t1.style.color = '#fff';
+    t2.style.background = '#f5f5f5'; t2.style.color = 'var(--sub)';
+  } else {
+    t2.style.background = 'var(--primary)'; t2.style.color = '#fff';
+    t1.style.background = '#f5f5f5'; t1.style.color = 'var(--sub)';
+    _buildTimeGrid();
+  }
+}
+
+function _buildDateGrid() {
+  var grid = document.getElementById('tp-date-grid');
+  grid.innerHTML = '';
+  var now = new Date();
+  var weekDays = ['周日','周一','周二','周三','周四','周五','周六'];
+  var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  for (var i = 0; i < 14; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    var key = d.getFullYear() + '-' + _p2(d.getMonth()+1) + '-' + _p2(d.getDate());
+    var label = i === 0 ? '今天' : i === 1 ? '明天' : weekDays[d.getDay()];
+    var sub = months[d.getMonth()] + _p2(d.getDate()) + '日';
+    var cell = document.createElement('div');
+    cell.className = 'tp-cell' + (key === _tpSelectedDate ? ' selected' : '');
+    cell.dataset.date = key;
+    cell.innerHTML = '<div style="font-weight:600;">' + label + '</div><div style="font-size:11px;color:var(--sub);">' + sub + '</div>';
+    cell.onclick = function() {
+      _tpSelectedDate = this.dataset.date;
+      _tpSelectedHour = null;
+      document.querySelectorAll('#tp-date-grid .tp-cell').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      _updateTpPreview();
+      // 自动跳到第2步
+      setTimeout(function(){ tpGoStep(2); }, 200);
+    };
+    grid.appendChild(cell);
+  }
+}
+
+function _buildTimeGrid() {
+  var grid = document.getElementById('tp-time-grid');
+  grid.innerHTML = '';
+  var now = new Date();
+  var isToday = _tpSelectedDate === (now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate()));
+  // 默认推荐：当前时间+1h
+  var defaultHour = now.getHours() + 1;
+  if (defaultHour >= 24) defaultHour = 23;
+
+  for (var h = 8; h <= 21; h++) {
+    var disabled = isToday && h <= now.getHours();
+    var cell = document.createElement('div');
+    cell.className = 'tp-cell' + (disabled ? ' disabled' : '') + (h === _tpSelectedHour ? ' selected' : '');
+    cell.dataset.hour = h;
+    var ampm = h < 12 ? '上午' : h < 18 ? '下午' : '晚上';
+    var h12 = h > 12 ? h - 12 : h;
+    cell.innerHTML = '<div style="font-weight:600;">' + _p2(h) + ':00</div><div style="font-size:11px;color:var(--sub);">' + ampm + '</div>';
+    if (!disabled) {
+      // 自动选中默认时间
+      if (_tpSelectedHour === null && h === defaultHour) {
+        cell.classList.add('selected');
+        _tpSelectedHour = h;
+        _updateTpPreview();
+      }
+      cell.onclick = function() {
+        _tpSelectedHour = parseInt(this.dataset.hour);
+        document.querySelectorAll('#tp-time-grid .tp-cell').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        _updateTpPreview();
+      };
+    }
+    grid.appendChild(cell);
+  }
+  _updateTpPreview();
+}
+
+function _updateTpPreview() {
+  var preview = document.getElementById('tp-preview');
+  var btn = document.getElementById('tp-confirm-btn');
+  if (!_tpSelectedDate) {
+    preview.textContent = '请先选择日期';
+    btn.disabled = true;
+    return;
+  }
+  if (_tpSelectedHour === null) {
+    preview.textContent = _formatDateLabel(_tpSelectedDate) + ' · 请选择时间';
+    btn.disabled = true;
+    return;
+  }
+  preview.innerHTML = '<span style="color:var(--primary);font-weight:600;">' + _formatDateLabel(_tpSelectedDate) + ' ' + _p2(_tpSelectedHour) + ':00</span>';
+  btn.disabled = false;
+}
+
+function _formatDateLabel(dateStr) {
+  var now = new Date();
+  var todayKey = now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate());
+  var tmrKey = now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate()+1);
+  if (dateStr === todayKey) return '今天';
+  if (dateStr === tmrKey) return '明天';
+  var d = new Date(dateStr);
+  var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  return months[d.getMonth()] + d.getDate() + '日';
+}
+
+function confirmTimePicker() {
+  if (!_tpSelectedDate || _tpSelectedHour === null) return;
+  var label = _formatDateLabel(_tpSelectedDate) + ' ' + _p2(_tpSelectedHour) + ':00';
+  var slot = document.getElementById('slot-custom');
+  slot.innerHTML = '🗓️ ' + label + '<br><span style="font-size:11px;color:var(--sub)">自定义时间</span>';
+  closeModal('modal-timepicker');
+}
+
+function _p2(n) { return n < 10 ? '0' + n : '' + n; }
 function switchOrderTab(el) {
   document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
