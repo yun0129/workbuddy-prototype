@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>邻里关怀 — Demo</title>
+<style>
+:root {
+  --primary: #4A90E2;
+  --primary-dark: #2c6fba;
+  --orange: #F5A623;
+  --green: #7ED321;
+  --red: #D0021B;
+  --bg: #F5F6FA;
+  --card: #FFFFFF;
+  --text: #1a1a2e;
+  --sub: #888;
+  --border: #E8E8E8;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  overflow: hidden;
+}
+
+/* 页面容器 */
+.app-root { width: 100%; height: 100vh; position: relative; overflow: hidden; }
+
+/* Screen */
+.screen { display: none; position: absolute; inset: 0; background: var(--bg); overflow: hidden; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* 状态栏 */
+.status-bar {
+  height: 44px;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  color: #fff;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* 顶部导航 */
+.top-nav {
+  background: #fff;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+}
+.top-nav .back { font-size: 22px; cursor: pointer; color: var(--primary); margin-right: 8px; }
+.top-nav .title { font-size: 16px; font-weight: 600; color: var(--text); flex: 1; text-align: center; }
+.top-nav .right-action { font-size: 13px; color: var(--primary); cursor: pointer; }
+
+/* 底部 Tab */
+.tab-bar {
+  height: 60px;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: 10px;
+  transition: color .2s;
+}
+.tab-item.active { color: var(--primary); }
+.tab-item .icon { font-size: 22px; }
+
+/* 滚动内容区 */
+.content-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
+.content-area::-webkit-scrollbar { display: none; }
+
+/* 通用组件 */
+.btn {
+  width: 100%; padding: 14px; border: none; border-radius: 10px;
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity .2s;
+}
+.btn:active { opacity: .82; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-orange { background: var(--orange); color: #fff; }
+.btn-sm {
+  padding: 7px 14px; border-radius: 20px; font-size: 13px;
+  font-weight: 500; border: none; cursor: pointer;
+}
+.input-field {
+  width: 100%; padding: 13px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 15px; outline: none; background: #fff;
+  transition: border-color .2s;
+}
+.input-field:focus { border-color: var(--primary); }
+.input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 14px; outline: none; background: #fff;
+  transition: border-color .2s;
+}
+.input:focus { border-color: var(--primary); }
+.label { font-size: 13px; color: var(--sub); margin-bottom: 6px; display: block; }
+.card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 12px;
+}
+.section-title { font-size: 15px; font-weight: 600; color: var(--text); padding: 14px 16px 6px; }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-blue { background: #e8f0fe; color: var(--primary); }
+.badge-orange { background: #fff3e0; color: #e65c00; }
+.badge-green { background: #e8f5e9; color: #388e3c; }
+.badge-gray { background: #f5f5f5; color: #888; }
+.divider { height: 1px; background: var(--border); margin: 10px 0; }
+.tag {
+  display: inline-block; padding: 3px 10px; border-radius: 4px;
+  font-size: 12px; background: #eef3fb; color: var(--primary); margin: 3px 3px 3px 0;
+}
+.notice {
+  background: #fff9e6; border-left: 4px solid var(--orange); border-radius: 8px;
+  padding: 10px 14px; font-size: 13px; color: #7a5300; margin: 12px 0; line-height: 1.5;
+}
+.annotation {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #888; margin-top: 6px;
+}
+.annotation::before { content: "💡"; font-size: 12px; }
+.map-placeholder {
+  background: #e8f0fe; border-radius: 10px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary); font-size: 13px; gap: 6px; margin: 8px 0;
+}
+.stars { color: #f5a623; font-size: 18px; letter-spacing: 2px; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+.progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+
+/* 登录页 */
+.login-bg {
+  background: linear-gradient(160deg, #4A90E2 0%, #2c6fba 60%, #1a3a6e 100%);
+  padding: 36px 24px 28px; color: #fff; flex-shrink: 0;
+}
+.login-logo { font-size: 42px; margin-bottom: 8px; }
+.login-title { font-size: 24px; font-weight: 700; }
+.login-sub { font-size: 14px; opacity: .75; margin-top: 4px; }
+.sms-row { display: flex; gap: 10px; }
+.sms-btn {
+  padding: 13px 14px; background: #eef3fb; border: none; border-radius: 10px;
+  color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.agree-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 0 0 16px; font-size: 12px; color: var(--sub);
+}
+.agree-checkbox {
+  width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 4px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px; transition: all .2s;
+}
+.agree-checkbox.checked { background: var(--primary); border-color: var(--primary); }
+.agree-checkbox.checked::after { content: "✓"; color: #fff; font-size: 12px; font-weight: 700; }
+.agree-text { line-height: 1.5; }
+.agree-link { color: var(--primary); cursor: pointer; }
+
+/* 协议弹窗 */
+.agreement-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.agreement-content {
+  background: #fff; border-radius: 16px; width: 100%;
+  max-width: 340px; max-height: 75vh; overflow: hidden; display: flex; flex-direction: column;
+}
+.agreement-header {
+  padding: 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.agreement-header h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 0; }
+.agreement-close { font-size: 24px; color: var(--sub); cursor: pointer; line-height: 1; }
+.agreement-body {
+  padding: 16px; overflow-y: auto; flex: 1;
+  font-size: 13px; line-height: 1.7; color: var(--text);
+}
+
+/* 角色选择 */
+.role-card {
+  background: #fff; border-radius: 14px; padding: 18px; display: flex;
+  align-items: flex-start; gap: 16px; cursor: pointer; border: 2px solid transparent;
+  transition: all .2s; margin-bottom: 14px; box-shadow: var(--shadow);
+}
+.role-card.selected, .role-card:active { border-color: var(--primary); box-shadow: 0 4px 16px rgba(74,144,226,.18); }
+.role-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: flex;
+  align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;
+}
+.role-card h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+.role-card p { font-size: 13px; color: var(--sub); margin-top: 4px; line-height: 1.5; }
+.role-sub { margin: 0 0 0 68px; display: none; }
+.role-sub.open { display: block; }
+.role-sub-item {
+  background: #f7f9ff; border-radius: 10px; padding: 14px; margin-bottom: 10px;
+  cursor: pointer; border: 1.5px solid var(--border); transition: all .2s;
+}
+.role-sub-item.selected { border-color: var(--primary); background: #eef3fb; }
+.role-sub-item h4 { font-size: 14px; font-weight: 600; }
+.role-sub-item p { font-size: 12px; color: var(--sub); margin-top: 3px; }
+
+/* 服务类目 */
+.category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.category-chip {
+  background: #f0f4ff; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 10px; text-align: center; cursor: pointer; font-size: 13px;
+  font-weight: 500; transition: all .2s;
+}
+.category-chip.selected { background: #eef3fb; border-color: var(--primary); color: var(--primary); }
+.category-chip .chip-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+.sub-list { display: none; padding: 8px 0 4px; }
+.sub-list.active { display: block; }
+.sub-item {
+  padding: 9px 12px; border-radius: 8px; font-size: 13px;
+  color: var(--text); cursor: pointer; transition: all .15s; border: 1px solid transparent;
+}
+.sub-item:active { background: #f5f5f5; }
+.sub-item.selected { background: #eef3fb; border-color: var(--primary); color: var(--primary); font-weight: 600; }
+
+/* 服务对象 */
+.service-target-card {
+  flex: 1; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 10px; text-align: center; cursor: pointer; transition: all .15s;
+}
+.service-target-card.selected { border-color: var(--primary); background: #eef3fb; }
+.service-target-card.selected div { color: var(--primary); }
+
+/* 时间选择 */
+.time-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
+.time-slot {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 10px;
+  text-align: center; cursor: pointer; font-size: 13px; transition: all .2s;
+}
+.time-slot.selected { border-color: var(--primary); background: #eef3fb; color: var(--primary); }
+
+/* 时间格子 */
+.tp-cell {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px;
+  text-align: center; font-size: 12px; cursor: pointer; line-height: 1.4; transition: all .15s;
+}
+.tp-cell:active { background: #f5f5f5; }
+.tp-cell.selected { border-color: var(--primary); background: #eef3fb; color: var(--primary); font-weight: 600; }
+.tp-cell.disabled { opacity: .35; pointer-events: none; }
+
+/* 地址管理 */
+.addr-tag-chip {
+  border: 1.5px solid var(--border); border-radius: 20px; padding: 5px 14px;
+  font-size: 13px; cursor: pointer; transition: all .15s; color: var(--text);
+}
+.addr-tag-chip.selected { border-color: var(--primary); background: #eef3fb; color: var(--primary); font-weight: 600; }
+.addr-card {
+  border: 1.5px solid var(--border); border-radius: 10px; padding: 12px;
+  margin-bottom: 10px; cursor: pointer; transition: all .15s; background: #fff;
+}
+.addr-card.is-default { border-color: var(--primary); background: #f7f9ff; }
+.addr-card-top { display: flex; align-items: center; gap: 8px; }
+.addr-card-label { font-size: 13px; font-weight: 600; color: var(--primary); background: #eef3fb; border: 1px solid var(--primary); border-radius: 12px; padding: 2px 8px; }
+.addr-card-tag { font-size: 13px; color: var(--sub); }
+.addr-card-addr { font-size: 14px; font-weight: 600; margin: 6px 0 4px; }
+.addr-card-contact { font-size: 12px; color: var(--sub); }
+.addr-card-actions { display: flex; gap: 16px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.addr-action { font-size: 13px; color: var(--sub); cursor: pointer; }
+.addr-action.default-btn { color: var(--primary); font-weight: 600; }
+.addr-default-badge { font-size: 12px; color: var(--green); font-weight: 600; margin-left: auto; }
+
+/* 首页 */
+.home-banner { background: linear-gradient(120deg, #4A90E2, #2c6fba); padding: 16px; color: #fff; flex-shrink: 0; }
+.home-banner h2 { font-size: 18px; font-weight: 700; }
+.home-banner p { font-size: 13px; opacity: .8; margin-top: 2px; }
+.home-search {
+  display: flex; align-items: center; background: rgba(255,255,255,.2);
+  border-radius: 22px; padding: 9px 14px; margin-top: 12px; gap: 8px;
+}
+.home-search span { font-size: 13px; opacity: .8; }
+.service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.service-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 6px; cursor: pointer; transition: background .2s;
+}
+.service-item:active { background: #f7f9ff; }
+.service-item .s-icon {
+  width: 46px; height: 46px; border-radius: 14px; display: flex;
+  align-items: center; justify-content: center; font-size: 22px; margin-bottom: 5px;
+}
+.service-item span { font-size: 11px; color: var(--text); font-weight: 500; text-align: center; }
+
+/* 发起服务 步骤 */
+.step-indicator {
+  display: flex; align-items: center; padding: 10px 16px;
+  background: #fff; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.step-dot {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--border);
+  color: var(--sub); font-size: 11px; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; flex-shrink: 0;
+}
+.step-dot.active { background: var(--primary); color: #fff; }
+.step-dot.done { background: var(--green); color: #fff; }
+.step-line { flex: 1; height: 2px; background: var(--border); margin: 0 4px; }
+.step-line.done { background: var(--green); }
+.step-label { font-size: 10px; color: var(--sub); text-align: center; }
+
+/* 价格底栏 */
+.order-footer {
+  background: #fff; flex-shrink: 0; border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+}
+
+/* 订单 */
+.order-tabs {
+  display: flex; background: #fff; border-bottom: 1px solid var(--border);
+  overflow-x: auto; flex-shrink: 0;
+}
+.order-tabs::-webkit-scrollbar { display: none; }
+.order-tab {
+  padding: 12px 14px; font-size: 13px; color: var(--sub); cursor: pointer;
+  white-space: nowrap; border-bottom: 2px solid transparent; font-weight: 500;
+}
+.order-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.order-card {
+  background: #fff; border-radius: var(--radius); padding: 14px 16px;
+  margin: 10px 12px; box-shadow: var(--shadow);
+}
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.order-type { font-size: 15px; font-weight: 600; }
+.order-meta { font-size: 12px; color: var(--sub); margin: 3px 0; }
+.order-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+
+/* 个人中心 */
+.profile-header {
+  background: linear-gradient(135deg, #4A90E2, #2c6fba);
+  padding: 24px 16px 20px; color: #fff; display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+.profile-avatar {
+  width: 60px; height: 60px; border-radius: 30px; background: rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;
+}
+.profile-name { font-size: 18px; font-weight: 700; }
+.profile-role { font-size: 13px; opacity: .8; margin-top: 3px; }
+.profile-item {
+  display: flex; align-items: center; padding: 14px 16px; background: #fff;
+  border-bottom: 1px solid var(--border); cursor: pointer; gap: 12px;
+}
+.profile-item:active { background: #f7f9ff; }
+.profile-item .p-icon { font-size: 20px; }
+.profile-item .p-label { flex: 1; font-size: 15px; color: var(--text); }
+.profile-item .p-right { font-size: 13px; color: var(--sub); }
+.profile-item .p-arrow { color: var(--sub); font-size: 16px; margin-left: 4px; }
+.switch-role-bar { margin: 12px; background: #fff; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.role-switch-item {
+  display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; gap: 10px; transition: background .2s;
+}
+.role-switch-item:last-child { border-bottom: none; }
+.role-switch-item.active { background: #eef3fb; }
+.rsi-icon { font-size: 20px; }
+.rsi-info { flex: 1; }
+.rsi-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.rsi-desc { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+/* 弹层 */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+}
+.modal-sheet {
+  background: #fff; border-radius: 20px 20px 0 0; padding: 20px 20px 16px;
+  width: 100%; max-width: 480px; max-height: 70vh; overflow-y: auto;
+}
+.modal-sheet.modal-center {
+  border-radius: 16px; width: 80%; max-width: 300px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); max-height: 80vh;
+}
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.modal-close { float: right; font-size: 20px; color: var(--sub); cursor: pointer; margin-top: -4px; }
+
+/* 小号类目 */
+.category-chip-sm {
+  background: #f0f4ff; border: 1px solid var(--border); border-radius: 16px;
+  padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; transition: all .2s;
+}
+.category-chip-sm.selected { background: #eef3fb; border-color: var(--primary); color: var(--primary); }
+
+/* 上传框 */
+.upload-box {
+  border: 1.5px dashed var(--border); border-radius: 10px; padding: 16px;
+  background: #fafafa; cursor: pointer; text-align: center; color: var(--sub);
+}
+
+/* 服务提供方 - 工作台 */
+.worker-stats {
+  display: flex; background: #fff; margin: 12px; border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.stat-item {
+  flex: 1; text-align: center; padding: 16px 0;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num { font-size: 22px; font-weight: 700; color: var(--orange); }
+.stat-label { font-size: 11px; color: var(--sub); margin-top: 4px; }
+
+/* 流程图 */
+.flow-diagram {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; padding: 12px; background: #fff; margin: 0 12px 12px;
+  border-radius: var(--radius); box-shadow: var(--shadow); flex-wrap: wrap;
+}
+.flow-node {
+  background: #fff3e0; color: #e65c00; border-radius: 6px;
+  padding: 5px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.flow-arrow { color: var(--orange); font-size: 12px; }
+
+/* 广场接单卡片 */
+.plaza-card {
+  background: #fff; border-radius: var(--radius); padding: 14px 16px;
+  margin: 0 12px 12px; box-shadow: var(--shadow); border-left: 4px solid var(--orange);
+}
+.plaza-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.plaza-title { font-size: 15px; font-weight: 600; }
+.plaza-info {
+  font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 10px;
+}
+
+/* 机构管理 */
+.member-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.member-card:last-child { border-bottom: none; }
+.member-avatar {
+  width: 40px; height: 40px; border-radius: 20px; background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+}
+.member-info { flex: 1; }
+.member-name { font-size: 14px; font-weight: 600; }
+.member-tags { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+/* 工作台 tab 样式覆盖 */
+.tab-bar.worker-tab .tab-item.active { color: var(--orange); }
+
+/* 引导入口浮层 */
+#guide-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 9000;
+  display: flex; align-items: flex-end;
+}
+#guide-sheet {
+  background: #fff; width: 100%; border-radius: 24px 24px 0 0; padding: 24px 20px 32px;
+}
+#guide-sheet h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+#guide-sheet p { font-size: 14px; color: var(--sub); margin-bottom: 20px; line-height: 1.6; }
+.guide-flow {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #f0f6ff; border-radius: 12px; padding: 14px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.guide-node {
+  background: var(--primary); color: #fff; border-radius: 8px;
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+}
+.guide-arrow { color: var(--primary); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="app-root" id="app">
+
+<!-- ========== 引导入口浮层 ========== -->
+<div id="guide-overlay">
+  <div id="guide-sheet">
+    <h2>🏘️ 邻里关怀</h2>
+    <p>居家养老服务平台演示 Demo<br>完整体验：登录 → 选角色 → 发起服务 → 支付</p>
+    <div class="guide-flow">
+      <div class="guide-node">登录</div>
+      <div class="guide-arrow">→</div>
+      <div class="guide-node">角色选择</div>
+      <div class="guide-arrow">→</div>
+      <div class="guide-node">发起服务</div>
+      <div class="guide-arrow">→</div>
+      <div class="guide-node">支付</div>
+      <div class="guide-arrow">→</div>
+      <div class="guide-node">订单</div>
+    </div>
+    <button class="btn btn-primary" onclick="closeGuide()">开始体验 →</button>
+  </div>
+</div>
+
+<!-- ========== 登录页 ========== -->
+<div class="screen active" id="s-login">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="content-area">
+    <div class="login-bg">
+      <div class="login-logo">🏘️</div>
+      <div class="login-title">邻里关怀</div>
+      <div class="login-sub">让爱陪伴，专业守护</div>
+    </div>
+    <div style="padding:20px 20px 0;">
+      <div id="login-panel-0">
+        <div class="notice">📱 检测到您当前使用中国联通号码 <b>186****8888</b></div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="goRole()">一键登录 186****8888</button>
+        </div>
+        <div class="annotation" style="text-align:center;margin-top:12px;">运营商授权读取当前SIM卡号码，一键完成登录</div>
+      </div>
+      <div style="margin-top:28px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:12px;color:var(--sub);">其他登录方式</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:32px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;" onclick="showWxBindModal()">
+            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="48" height="48"><path d="M669.3 369.4c9.8 0 19.6 0 29.4 1.6C671 245.2 536.9 152 383.2 152 211.6 152 71 269.7 71 416.8c0 85 45.8 156.9 124.2 210.9l-31.1 93.2L273.6 667c39.2 8.2 70.3 16.3 109.5 16.3 9.8 0 19.6 0 31.1-1.6-6.5-21.3-9.8-42.5-9.8-65.4 0.1-135.7 116.2-246.9 264.9-246.9z m-168.4-85c24.5 0 39.2 16.3 39.2 39.2 0 22.9-16.3 39.2-39.2 39.2-24.5 0-47.4-16.4-47.4-39.2 0-24.5 24.6-39.2 47.4-39.2z m-216.3 73.1c-24.7 0-47.8-16.2-47.8-38.8 0-24.3 24.7-38.8 47.8-38.8s39.5 16.2 39.5 38.8c0.1 22.7-16.4 38.8-39.5 38.8z" fill="#24DB5A"/><path d="M953.8 613c0-125.9-124.2-227.2-264.8-227.2-148.8 0-266.5 103-266.5 227.2 0 125.9 117.7 227.2 266.5 227.2 31.1 0 62.1-8.2 93.2-16.3l85 47.4-22.9-78.5c62.1-47.4 109.5-109.5 109.5-179.8z m-351.5-39.2c-14.7 0-31.1-14.7-31.1-31.1 0-14.7 16.3-31.1 31.1-31.1 22.9 0 39.2 16.3 39.2 31.1 0 16.4-14.7 31.1-39.2 31.1z m178-7.6c-14.8 0-31.3-14.6-31.3-30.7 0-14.6 16.5-30.7 31.3-30.7 23.1 0 39.5 16.2 39.5 30.7 0 16.2-16.4 30.7-39.5 30.7z" fill="#24DB5A"/></svg>
+            <span style="font-size:12px;color:var(--sub);">微信</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;" onclick="switchToSmsLogin()">
+            <div style="width:48px;height:48px;background:#f5f5f5;border-radius:50%;display:flex;align-items:center;justify-content:center;"><span style="font-size:22px;">💬</span></div>
+            <span style="font-size:12px;color:var(--sub);">验证码</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;" onclick="switchToPwdLogin()">
+            <div style="width:48px;height:48px;background:#f5f5f5;border-radius:50%;display:flex;align-items:center;justify-content:center;"><span style="font-size:22px;">🔒</span></div>
+            <span style="font-size:12px;color:var(--sub);">密码</span>
+          </div>
+        </div>
+      </div>
+      <div class="agree-row" style="margin-top:24px;">
+        <div class="agree-checkbox" id="agree-checkbox" onclick="toggleAgree()"></div>
+        <div class="agree-text">我已阅读并同意<span class="agree-link" onclick="showAgreement('user')">《用户协议》</span>和<span class="agree-link" onclick="showAgreement('privacy')">《隐私政策》</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- 协议弹窗 -->
+  <div class="agreement-modal" id="modal-agreement">
+    <div class="agreement-content">
+      <div class="agreement-header">
+        <h3 id="agreement-title">用户协议</h3>
+        <span class="agreement-close" onclick="closeAgreement()">×</span>
+      </div>
+      <div class="agreement-body" id="agreement-body"></div>
+    </div>
+  </div>
+  <div id="agreement-user-content" style="display:none">
+    <p style="font-weight:600;margin-bottom:12px;">一、服务条款的确认和接受</p>
+    <p style="margin-bottom:12px;">邻里关怀平台（以下简称"平台"）由常州市邻里科技有限公司运营，您在使用平台服务前，应仔细阅读本协议的全部内容。</p>
+    <p style="font-weight:600;margin-bottom:12px;">二、服务内容</p>
+    <p style="margin-bottom:12px;">平台为用户提供居家养老服务撮合、紧急救援协助、健康管理指导等服务。</p>
+    <p style="font-weight:600;margin-bottom:12px;">三、用户义务</p>
+    <p>用户应保证所填写的个人信息真实有效，不得利用平台从事任何违法活动。</p>
+  </div>
+  <div id="agreement-privacy-content" style="display:none">
+    <p style="font-weight:600;margin-bottom:12px;">一、信息收集</p>
+    <p style="margin-bottom:12px;">我们收集您主动提供的个人信息，包括但不限于手机号码、身份证信息、健康状况、家庭地址等。</p>
+    <p style="font-weight:600;margin-bottom:12px;">二、信息使用</p>
+    <p>您的信息将用于：服务匹配、服务记录、紧急联系、平台安全维护。</p>
+  </div>
+  <!-- 微信绑定手机弹窗 -->
+  <div class="agreement-modal" id="modal-wx-bind">
+    <div class="agreement-content">
+      <div class="agreement-header">
+        <h3>绑定手机号</h3>
+        <span class="agreement-close" onclick="closeWxBindModal()">×</span>
+      </div>
+      <div class="agreement-body" style="padding:20px;">
+        <p style="font-size:14px;color:var(--sub);margin-bottom:16px;text-align:center;">微信授权成功，请绑定手机号完成注册</p>
+        <div style="margin-bottom:12px;">
+          <div class="sms-row">
+            <input class="input-field" placeholder="请输入手机号" style="flex:1" />
+            <button class="sms-btn">获取验证码</button>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <input class="input-field" placeholder="请输入6位验证码" maxlength="6" />
+          <div class="annotation">60秒后可重新发送</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="closeWxBindModal();goRole();">确认绑定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 角色选择 ========== -->
+<div class="screen" id="s-role">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav"><div class="title">选择您的身份</div></div>
+  <div class="content-area" style="padding:16px;">
+    <p style="font-size:14px;color:var(--sub);margin-bottom:16px;line-height:1.6;">请选择您想要的身份，后续可在个人中心切换</p>
+    <div class="role-card" id="rc-user" onclick="showScreen('s-profile-user')">
+      <div class="role-icon" style="background:#eef3fb;">🙋</div>
+      <div>
+        <h3>我需要服务</h3>
+        <p>为自己或家中老人发起服务需求<br>（用户 / 服务发起方）</p>
+      </div>
+    </div>
+    <div class="role-card" id="rc-worker" onclick="toggleWorkerRole()">
+      <div class="role-icon" style="background:#fff3e0;">🛠️</div>
+      <div style="flex:1;">
+        <h3>我提供服务</h3>
+        <p>作为个人服务者或机构入驻平台</p>
+      </div>
+      <span style="font-size:16px;color:var(--sub)" id="worker-arrow">▸</span>
+    </div>
+    <div class="role-sub" id="worker-sub">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="role-sub-item" id="rsi-personal" onclick="togglePersonalCats()" style="text-align:center;">
+          <h4>👤 个人服务者</h4>
+          <p>个人接单，需实名认证</p>
+          <div id="personal-cats-wrap" style="display:none;margin-top:12px;">
+            <div id="personal-cats" style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'idcard')">📱 数字助老</div>
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'idcard')">🏥 就医陪护</div>
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'idcard')">🚗 出行协助</div>
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'idcard')">💬 精神关怀</div>
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'license')">🔧 家居维修</div>
+              <div class="category-chip-sm" onclick="event.stopPropagation();toggleCat(this,'health')">🍳 生活照料</div>
+            </div>
+            <div id="cert-upload-area" style="display:none;margin-top:12px;text-align:left;">
+              <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">请上传以下证件</div>
+              <div id="cert-idcard" style="display:none;margin-bottom:10px;">
+                <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">身份证 <span style="color:var(--red)">*</span></div>
+                <div class="upload-box"><div style="font-size:20px;">📷</div><div style="font-size:11px;">上传身份证人像面</div></div>
+              </div>
+              <div id="cert-license" style="display:none;margin-bottom:10px;">
+                <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">职业资格证 <span style="color:var(--red)">*</span></div>
+                <div class="upload-box"><div style="font-size:20px;">📷</div><div style="font-size:11px;">上传职业资格证书</div></div>
+              </div>
+              <div id="cert-health" style="display:none;margin-bottom:10px;">
+                <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">健康证 <span style="color:var(--red)">*</span></div>
+                <div class="upload-box"><div style="font-size:20px;">📷</div><div style="font-size:11px;">上传健康证</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="role-sub-item" id="rsi-org" onclick="toggleOrgCert()" style="text-align:center;">
+          <h4>🏢 机构入驻</h4>
+          <p>以机构名义入驻</p>
+          <div id="org-cert-wrap" style="display:none;margin-top:12px;text-align:left;">
+            <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">营业执照 <span style="color:var(--red)">*</span></div>
+            <div class="upload-box"><div style="font-size:20px;">📷</div><div style="font-size:11px;">上传营业执照</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="enterFromRoleSelect()">确认并进入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 首页 ========== -->
+<div class="screen" id="s-home">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="content-area">
+    <div class="home-banner">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><p style="font-size:13px;opacity:.8;">下午好，薯条 👋</p><h2>需要什么帮助？</h2></div>
+        <div style="text-align:right;font-size:12px;opacity:.8;"><div>📍 常州市钟楼区</div><div style="margin-top:3px;">🔔 通知</div></div>
+      </div>
+      <div class="home-search"><span>🔍</span><span>搜索服务、技师...</span></div>
+    </div>
+    <div class="section-title">快捷服务</div>
+    <div class="service-grid" style="padding:0 16px;">
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e8f0fe;">📱</div><span>数字助老</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fff3e0;">🔧</div><span>家居维修</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e8f5e9;">🍳</div><span>生活照料</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fce4ec;">🏥</div><span>就医陪护</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e3f2fd;">🚗</div><span>出行协助</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#f3e5f5;">💬</div><span>精神关怀</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fffde7;">🆘</div><span>应急协助</span></div>
+      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#f1f8e9;">📋</div><span>更多服务</span></div>
+    </div>
+    <div class="section-title">常用服务</div>
+    <div class="card" style="margin:0 16px 12px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:50px;height:50px;background:#e8f0fe;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">📱</div>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:600;">手机使用指导</div><div style="font-size:12px;color:var(--sub);margin-top:2px;">已预约 3次</div></div>
+        <button class="btn-sm btn-primary" onclick="showScreen('s-order-new')">预约</button>
+      </div>
+    </div>
+    <div class="section-title">为您推荐</div>
+    <div class="card" style="margin:0 16px 20px;">
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <div style="width:64px;height:64px;background:#fff3e0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;">🔧</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:600;">家电清洗保养</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px;">空调、洗衣机深度清洗</div>
+          <div style="font-size:14px;color:var(--orange);font-weight:600;margin-top:4px;">¥80起</div>
+        </div>
+      </div>
+      <div><span class="tag">空调清洗</span><span class="tag">洗衣机</span><span class="tag">油烟机</span></div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item active"><div class="icon">🏠</div>首页</div>
+    <div class="tab-item" onclick="showScreen('s-order-new')"><div class="icon">➕</div>发起服务</div>
+    <div class="tab-item" onclick="showScreen('s-orders')"><div class="icon">📋</div>我的服务单</div>
+    <div class="tab-item" onclick="showScreen('s-profile-user')"><div class="icon">👤</div>我的</div>
+  </div>
+</div>
+
+<!-- ========== 发起服务单 ========== -->
+<div class="screen" id="s-order-new">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav">
+    <span class="back" onclick="showScreen('s-home')">‹</span>
+    <div class="title">发起服务</div>
+  </div>
+  <div class="step-indicator">
+    <div style="display:flex;flex-direction:column;align-items:center"><div class="step-dot done">✓</div><div class="step-label" style="margin-top:2px;">选服务</div></div>
+    <div class="step-line done"></div>
+    <div style="display:flex;flex-direction:column;align-items:center"><div class="step-dot active">2</div><div class="step-label" style="margin-top:2px;">填信息</div></div>
+    <div class="step-line"></div>
+    <div style="display:flex;flex-direction:column;align-items:center"><div class="step-dot">3</div><div class="step-label" style="margin-top:2px;">支付</div></div>
+    <div class="step-line"></div>
+    <div style="display:flex;flex-direction:column;align-items:center"><div class="step-dot">4</div><div class="step-label" style="margin-top:2px;">等待接单</div></div>
+  </div>
+  <div class="content-area" style="padding:12px 12px 0;">
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;">选择服务类型 <span style="color:var(--red)">*</span></div>
+      <div class="category-grid" style="gap:8px;">
+        <div class="category-chip selected" data-cat="数字助老" onclick="selectCat(this)"><span class="chip-icon">📱</span>数字助老</div>
+        <div class="category-chip" data-cat="家居维修" onclick="selectCat(this)"><span class="chip-icon">🔧</span>家居维修</div>
+        <div class="category-chip" data-cat="生活照料" onclick="selectCat(this)"><span class="chip-icon">🍳</span>生活照料</div>
+        <div class="category-chip" data-cat="就医陪同" onclick="selectCat(this)"><span class="chip-icon">🏥</span>就医陪同</div>
+        <div class="category-chip" data-cat="出行协助" onclick="selectCat(this)"><span class="chip-icon">🚗</span>出行协助</div>
+        <div class="category-chip" data-cat="精神关怀" onclick="selectCat(this)"><span class="chip-icon">💬</span>精神关怀</div>
+        <div class="category-chip" data-cat="应急协助" onclick="selectCat(this)"><span class="chip-icon">🚨</span>应急协助</div>
+      </div>
+      <div id="cat-subs">
+        <div class="sub-list active" data-sub="数字助老">
+          <div class="sub-item selected" onclick="selectSub(this,'数字助老 · 智能设备教学','¥80')">智能设备教学（手机/平板/电视）</div>
+          <div class="sub-item" onclick="selectSub(this,'数字助老 · 常用软件指导','¥60')">常用软件指导（微信、视频通话、防诈APP）</div>
+          <div class="sub-item" onclick="selectSub(this,'数字助老 · 网络与账号服务','¥50')">网络与账号服务（WiFi、打印机、密码重置）</div>
+        </div>
+        <div class="sub-list" data-sub="家居维修">
+          <div class="sub-item" onclick="selectSub(this,'家居维修 · 水电暖维修','¥120')">水电暖维修（水管疏通、灯具更换）</div>
+          <div class="sub-item" onclick="selectSub(this,'家居维修 · 家电维修','¥150')">家电维修（电视、冰箱、洗衣机）</div>
+          <div class="sub-item" onclick="selectSub(this,'家居维修 · 适老化改造','¥200')">适老化改造（防滑垫、安全扶手）</div>
+        </div>
+        <div class="sub-list" data-sub="生活照料">
+          <div class="sub-item" onclick="selectSub(this,'生活照料 · 助餐服务','¥60')">助餐服务（上门做饭、营养配餐）</div>
+          <div class="sub-item" onclick="selectSub(this,'生活照料 · 助洁服务','¥80')">助洁服务（日常保洁、衣物清洗）</div>
+          <div class="sub-item" onclick="selectSub(this,'生活照料 · 助浴与理发','¥70')">助浴与理发（上门助浴、理发）</div>
+        </div>
+        <div class="sub-list" data-sub="就医陪同">
+          <div class="sub-item" onclick="selectSub(this,'就医陪同 · 就医陪诊','¥150')">就医陪诊（挂号、陪诊、取药）</div>
+          <div class="sub-item" onclick="selectSub(this,'就医陪同 · 日常健康管理','¥50')">日常健康管理（血压血糖、用药提醒）</div>
+        </div>
+        <div class="sub-list" data-sub="出行协助">
+          <div class="sub-item" onclick="selectSub(this,'出行协助 · 出行陪同','¥80')">出行陪同（买菜、逛公园、银行办事）</div>
+          <div class="sub-item" onclick="selectSub(this,'出行协助 · 专属用车','¥120')">专属用车（老年版专车、机场接送）</div>
+        </div>
+        <div class="sub-list" data-sub="精神关怀">
+          <div class="sub-item" onclick="selectSub(this,'精神关怀 · 志愿探访','¥0')">志愿探访（定期上门慰问、生日关怀）</div>
+        </div>
+        <div class="sub-list" data-sub="应急协助">
+          <div class="sub-item" onclick="selectSub(this,'应急协助 · 突发疾病陪护','¥200')">突发疾病陪护</div>
+          <div class="sub-item" onclick="selectSub(this,'应急协助 · 紧急上门探视','¥180')">紧急上门探视</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label class="label">具体需求描述</label>
+        <div style="background:#f5f5f5;border-radius:8px;padding:10px;display:flex;align-items:center;gap:6px;">
+          <input style="flex:1;border:none;background:transparent;font-size:14px;outline:none;" placeholder="妈妈想学习微信视频通话..." />
+          <span style="font-size:20px;color:var(--primary)">🎤</span>
+        </div>
+        <div class="annotation">支持语音输入，方便老人自行填写</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;">服务对象 <span style="color:var(--red)">*</span></div>
+      <div style="display:flex;gap:10px;" id="service-target-group">
+        <div class="service-target-card selected" onclick="selectTarget(this)"><div style="font-size:20px;">🙋</div><div style="font-size:13px;font-weight:600;margin-top:4px;">本人</div></div>
+        <div class="service-target-card" onclick="selectTarget(this)"><div style="font-size:20px;">👵</div><div style="font-size:13px;font-weight:600;margin-top:4px;">妈妈</div><div style="font-size:11px;color:var(--sub);">常州家中</div></div>
+        <div class="service-target-card" onclick="selectTarget(this)"><div style="font-size:20px;">👴</div><div style="font-size:13px;font-weight:600;margin-top:4px;">爸爸</div><div style="font-size:11px;color:var(--sub);">常州家中</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;">服务时间 <span style="color:var(--red)">*</span></div>
+      <div class="time-slots">
+        <div class="time-slot" onclick="toggleTimeSlot(this)">🔥 立即上门<br><span style="font-size:11px;color:var(--sub)">30分钟内</span></div>
+        <div class="time-slot" onclick="toggleTimeSlot(this)">📅 今天下午<br><span style="font-size:11px;color:var(--sub)">14:00–18:00</span></div>
+        <div class="time-slot" onclick="toggleTimeSlot(this)">📅 明天上午<br><span style="font-size:11px;color:var(--sub)">09:00–12:00</span></div>
+        <div class="time-slot" id="slot-custom" onclick="openTimePicker(this)">🗓️ 自定义时间</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;">服务地址 <span style="color:var(--red)">*</span></div>
+      <div id="addr-default-card" style="display:flex;align-items:center;gap:10px;padding:10px;background:#f7f9ff;border-radius:8px;cursor:pointer;border:1.5px solid var(--primary);" onclick="showScreen('s-address-list')">
+        <span style="font-size:18px;">📍</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;" id="addr-display-addr">常州市钟楼区 × × 小区 1栋302</div>
+          <div style="font-size:12px;color:var(--sub);" id="addr-display-label">妈妈的家</div>
+        </div>
+        <span style="color:var(--sub);">›</span>
+      </div>
+      <div id="addr-empty-card" style="display:none;align-items:center;gap:10px;padding:14px 10px;background:#f7f9ff;border-radius:8px;cursor:pointer;border:1.5px dashed var(--primary);" onclick="showScreen('s-address-form')">
+        <span style="font-size:20px;color:var(--primary);">+</span>
+        <div style="font-size:14px;color:var(--primary);font-weight:600;">新增地址</div>
+      </div>
+    </div>
+    <div style="height:12px;"></div>
+  </div>
+  <div class="order-footer">
+    <div style="padding:10px 16px 8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span id="price-label" style="font-size:13px;color:var(--sub);flex:1;">数字助老 · 智能设备教学</span>
+        <span id="price-amount" style="font-weight:700;color:var(--orange);font-size:20px;">¥80</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-top:3px;">
+        <span>上门后按 ¥30/半小时 追加</span>
+        <span style="color:var(--green);">已优惠¥10</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="border-radius:0;padding:14px 0;font-size:16px;font-weight:700;" onclick="showOrderConfirm()">确认下单 · 去支付</button>
+  </div>
+  <!-- 支付弹层 -->
+  <div class="modal-overlay" id="modal-pay" style="display:none;align-items:flex-end;" onclick="closeModal('modal-pay')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-title">选择支付方式 <span class="modal-close" onclick="closeModal('modal-pay')">×</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <div data-pay="wechat" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--primary);border-radius:10px;background:#eef3fb;cursor:pointer;" onclick="payNow('wechat',this)">
+          <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#07C160"/><path d="M9.5 10.5c.5-1 2.5-.5 4-.3-.2 1.2-.7 2.3-.8 3.5-.6-.3-.5-1-.7-1.5-.7.7-1.8.3-2.5-.5v-.2zm7.5 1c1-.4 1.5.5 2.2.7-.2 1.5-1.5 2.3-2.3 3.4-.5-.6-.3-1.8-1-2.1-.5-.5-1.3-.7-1.5-1.4.8.3 1.7.2 2.3-.2h.3zm-5 1c.6-.6 1.2-1.3 2-1.6.5.8 1.2 1.5 1.5 2.5-1.2.6-2.3 1-3.5 1.4v-2.3z" fill="#fff"/></svg>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;">微信支付</div></div>
+          <span class="pay-check" style="font-size:18px;color:var(--primary);">✓</span>
+        </div>
+        <div data-pay="alipay" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;" onclick="payNow('alipay',this)">
+          <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#1677FF"/><text x="14" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial">支</text></svg>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;">支付宝</div></div>
+          <span class="pay-check" style="font-size:18px;color:var(--primary);display:none;">✓</span>
+        </div>
+        <div data-pay="family" style="display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;" onclick="payNow('family',this)">
+          <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fa8c16"/><circle cx="10" cy="12" r="2.5" fill="#fff"/><circle cx="18" cy="12" r="2.5" fill="#fff"/><circle cx="14" cy="17" r="2.5" fill="#fff"/></svg>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;">家属代付</div><div style="font-size:12px;color:var(--sub);">账单发送给子女确认后支付</div></div>
+          <span class="pay-check" style="font-size:18px;color:var(--primary);display:none;">✓</span>
+        </div>
+      </div>
+      <div id="pay-modal-price" style="font-size:22px;font-weight:700;text-align:center;color:var(--orange);margin-bottom:16px;">¥80</div>
+      <button class="btn btn-primary" onclick="closeModal('modal-pay');showScreen('s-orders')">立即支付</button>
+    </div>
+  </div>
+  <!-- 时间选择弹层 -->
+  <div class="modal-overlay" id="modal-timepicker" style="display:none;align-items:flex-end;" onclick="closeModal('modal-timepicker')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:65%;">
+      <div class="modal-title">选择服务时间 <span class="modal-close" onclick="closeModal('modal-timepicker')">×</span></div>
+      <div id="tp-step-bar" style="display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);">
+        <div id="tp-step1-tab" style="flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:600;background:var(--primary);color:#fff;cursor:pointer;" onclick="tpGoStep(1)">① 选日期</div>
+        <div id="tp-step2-tab" style="flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:600;background:#f5f5f5;color:var(--sub);cursor:pointer;" onclick="tpGoStep(2)">② 选时间</div>
+      </div>
+      <div id="tp-step1">
+        <div style="font-size:13px;color:var(--sub);margin-bottom:10px;">选择上门日期</div>
+        <div id="tp-date-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      </div>
+      <div id="tp-step2" style="display:none;">
+        <div style="font-size:13px;color:var(--sub);margin-bottom:10px;">选择上门时间（整点）</div>
+        <div id="tp-time-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      </div>
+      <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;">
+        <div id="tp-preview" style="font-size:14px;color:var(--text);">请先选择日期</div>
+        <button id="tp-confirm-btn" class="btn btn-primary" style="width:auto;padding:10px 24px;font-size:14px;" disabled onclick="confirmTimePicker()">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 地址管理页 ========== -->
+<div class="screen" id="s-address-list">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav">
+    <span class="back" onclick="showScreen('s-order-new')">‹</span>
+    <div class="title">地址管理</div>
+    <span style="font-size:14px;color:var(--primary);cursor:pointer;" onclick="showScreen('s-address-form')">新增</span>
+  </div>
+  <div class="content-area" style="padding:14px;">
+    <div id="addr-list-container"></div>
+  </div>
+</div>
+
+<!-- ========== 地址新增/编辑页 ========== -->
+<div class="screen" id="s-address-form">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav">
+    <span class="back" onclick="goBackFromAddrForm()">‹</span>
+    <div class="title" id="addr-form-title">新增地址</div>
+  </div>
+  <div class="content-area" style="padding:16px;">
+    <div class="card">
+      <div style="margin-bottom:14px;">
+        <label class="label">地址标签</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="addr-tag-chip selected" onclick="selectAddrTag(this,'妈妈的家')">妈妈的家</div>
+          <div class="addr-tag-chip" onclick="selectAddrTag(this,'爸爸的家')">爸爸的家</div>
+          <div class="addr-tag-chip" onclick="selectAddrTag(this,'我的家')">我的家</div>
+          <div class="addr-tag-chip" onclick="selectAddrTag(this,'公司')">公司</div>
+        </div>
+        <input id="addr-form-label" type="hidden" value="妈妈的家" />
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="label">详细地址 <span style="color:var(--red)">*</span></label>
+        <input id="addr-form-addr" class="input" placeholder="如：常州市钟楼区 × × 小区 1栋302" />
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="label">联系人 <span style="color:var(--red)">*</span></label>
+        <input id="addr-form-contact" class="input" placeholder="请输入联系人姓名" />
+      </div>
+      <div>
+        <label class="label">手机号 <span style="color:var(--red)">*</span></label>
+        <input id="addr-form-phone" class="input" type="tel" placeholder="请输入手机号" maxlength="11" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:20px;width:100%;" onclick="saveAddress()">保存地址</button>
+  </div>
+</div>
+
+<!-- ========== 我的服务单 ========== -->
+<div class="screen" id="s-orders">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav">
+    <span class="back" onclick="showScreen('s-home')">‹</span>
+    <div class="title">我的服务单</div>
+  </div>
+  <div class="order-tabs">
+    <div class="order-tab active" onclick="switchOrderTab(this)">全部</div>
+    <div class="order-tab" onclick="switchOrderTab(this)">待接单</div>
+    <div class="order-tab" onclick="switchOrderTab(this)">服务中</div>
+    <div class="order-tab" onclick="switchOrderTab(this)">待确认</div>
+    <div class="order-tab" onclick="switchOrderTab(this)">已完结</div>
+    <div class="order-tab" onclick="switchOrderTab(this)">已取消</div>
+  </div>
+  <div class="content-area">
+    <div class="order-card">
+      <div class="order-header">
+        <span class="order-type">📱 手机使用指导</span>
+        <span class="badge badge-orange">服务中</span>
+      </div>
+      <div class="order-meta">📅 今日 14:00 · 📍 妈妈家中</div>
+      <div class="order-meta">👷 张师傅 · ⭐4.9 (132单)</div>
+      <div class="map-placeholder">🗺️ 张师傅距您约 0.8km，预计10分钟到</div>
+      <div class="order-actions">
+        <button class="btn-sm" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);">📞 联系师傅</button>
+        <button class="btn-sm" style="background:#fff;color:var(--red);border:1.5px solid var(--red);">取消服务</button>
+      </div>
+    </div>
+    <div class="order-card">
+      <div class="order-header">
+        <span class="order-type">🔧 家具组装安装</span>
+        <span class="badge badge-blue">待接单</span>
+      </div>
+      <div class="order-meta">📅 明日 10:00–12:00 · 📍 爸爸家中</div>
+      <div class="order-meta">已发布2小时，附近有3位师傅可接单</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+      <div class="order-actions">
+        <button class="btn-sm" style="background:#fff;color:var(--sub);border:1.5px solid var(--border);">修改时间</button>
+        <button class="btn-sm" style="background:#fff;color:var(--red);border:1.5px solid var(--red);">取消服务单</button>
+      </div>
+    </div>
+    <div class="order-card">
+      <div class="order-header">
+        <span class="order-type">🍳 上门做饭</span>
+        <span class="badge badge-green">待老人确认</span>
+      </div>
+      <div class="order-meta">📅 昨日 11:30 · 服务已完成，等待妈妈确认</div>
+      <div class="order-meta">👷 李阿姨 · 时长约 1.5小时</div>
+      <div class="order-actions">
+        <button class="btn-sm btn-primary">代为确认完成</button>
+        <button class="btn-sm" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);">查看服务凭证</button>
+      </div>
+    </div>
+    <div class="order-card">
+      <div class="order-header">
+        <span class="order-type">🏥 就医陪护</span>
+        <span class="badge badge-gray">已完结</span>
+      </div>
+      <div class="order-meta">📅 2026/04/18 · ⭐ 已评价</div>
+      <div class="order-meta">👷 王志远 · 用时约 3小时</div>
+      <div style="margin-top:6px;color:#f5a623">★★★★★</div>
+      <div class="order-actions">
+        <button class="btn-sm" style="background:#fff;color:var(--primary);border:1.5px solid var(--primary);">再次预约</button>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="showScreen('s-home')"><div class="icon">🏠</div>首页</div>
+    <div class="tab-item" onclick="showScreen('s-order-new')"><div class="icon">➕</div>发起服务</div>
+    <div class="tab-item active"><div class="icon">📋</div>我的服务单</div>
+    <div class="tab-item" onclick="showScreen('s-profile-user')"><div class="icon">👤</div>我的</div>
+  </div>
+</div>
+
+<!-- ========== 个人中心 ========== -->
+<div class="screen" id="s-profile-user">
+  <div class="status-bar"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="content-area">
+    <div class="profile-header">
+      <div class="profile-avatar">👤</div>
+      <div>
+        <div class="profile-name">薯条</div>
+        <div class="profile-role">用户（服务发起方）</div>
+        <div style="margin-top:6px;">
+          <span class="badge" style="background:rgba(255,255,255,.25);color:#fff;font-size:11px;">已实名认证 ✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">切换角色</div>
+    <div class="switch-role-bar">
+      <div class="role-switch-item active">
+        <span class="rsi-icon">🙋</span>
+        <div class="rsi-info"><div class="rsi-name">用户 / 服务发起方</div><div class="rsi-desc">当前身份 · 可发起服务需求</div></div>
+        <span style="color:var(--primary);font-weight:700;">✓</span>
+      </div>
+      <div class="role-switch-item" onclick="showScreen('s-worker')">
+        <span class="rsi-icon">🛠️</span>
+        <div class="rsi-info"><div class="rsi-name">服务提供方（个人）</div><div class="rsi-desc">切换后进入工作台，可接单</div></div>
+        <span style="color:var(--sub);">›</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;background:#fff;">
+      <div class="profile-item"><span class="p-icon">👤</span><span class="p-label">基础信息</span><span class="p-right">姓名/年龄/头像</span><span class="p-arrow">›</span></div>
+      <div class="profile-item" onclick="showScreen('s-address-list')"><span class="p-icon">📍</span><span class="p-label">常用地址</span><span class="p-right" style="color:var(--primary)">3个</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">🚨</span><span class="p-label">紧急联系人</span><span class="p-right" style="color:var(--primary)">2人</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">🏥</span><span class="p-label">健康备注</span><span class="p-right">过敏史、行动能力</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">👨‍👩‍👧</span><span class="p-label">家庭账号绑定</span><span class="p-right" style="color:var(--primary)">已绑定2人</span><span class="p-arrow">›</span></div>
+    </div>
+    <div style="margin-top:10px;background:#fff;">
+      <div class="profile-item"><span class="p-icon">💰</span><span class="p-label">钱包 / 优惠券</span><span class="p-right">余额 ¥50</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">📄</span><span class="p-label">消费明细</span><span class="p-right"></span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">⚙️</span><span class="p-label">设置</span><span class="p-right">字号/通知/隐私</span><span class="p-arrow">›</span></div>
+    </div>
+    <div style="height:20px;"></div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="showScreen('s-home')"><div class="icon">🏠</div>首页</div>
+    <div class="tab-item" onclick="showScreen('s-order-new')"><div class="icon">➕</div>发起服务</div>
+    <div class="tab-item" onclick="showScreen('s-orders')"><div class="icon">📋</div>我的服务单</div>
+    <div class="tab-item active"><div class="icon">👤</div>我的</div>
+  </div>
+</div>
+
+<!-- ========== 服务提供方工作台 ========== -->
+<div class="screen" id="s-worker">
+  <div class="status-bar" style="background:#e65c00;"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="top-nav" style="background:#fff3e0;border-bottom-color:#ffe0b2;">
+    <div class="title" style="color:#e65c00;">工作台</div>
+    <span class="right-action" style="color:#e65c00;" onclick="showScreen('s-profile-worker')">张师傅 ▸</span>
+  </div>
+  <div class="content-area">
+    <div class="worker-stats">
+      <div class="stat-item"><div class="stat-num">¥320</div><div class="stat-label">今日收入</div></div>
+      <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">本周服务</div></div>
+      <div class="stat-item"><div class="stat-num">4.9</div><div class="stat-label">综合评分</div></div>
+    </div>
+    <div class="section-title">当前服务单</div>
+    <div class="order-card" style="margin:0 12px 12px;border-left:4px solid var(--orange);">
+      <div class="order-header">
+        <span class="order-type">📱 手机使用指导</span>
+        <span class="badge badge-orange">进行中</span>
+      </div>
+      <div class="order-meta">📍 钟楼区 × × 小区 1栋302（张奶奶家）</div>
+      <div class="order-meta">⏰ 今日 14:00 · 预计1小时</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn-sm btn-primary" style="background:#4A90E2;color:#fff">📍 出发打卡</button>
+        <button class="btn-sm btn-primary" style="background:#43a047;color:#fff">✅ 到达打卡</button>
+        <button class="btn-sm btn-primary" style="background:#f5a623;color:#fff">📸 上传凭证</button>
+        <button class="btn-sm btn-primary">提交完成申请</button>
+      </div>
+    </div>
+    <div class="section-title">附近待接单 <span class="badge badge-blue" style="font-size:11px;">8个</span></div>
+    <div class="flow-diagram">
+      <div class="flow-node">发起方下单</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">广场展示</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">服务方接单</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">上门服务</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">老人确认</div>
+    </div>
+    <div class="plaza-card">
+      <div class="plaza-header">
+        <span class="plaza-title">🔧 家电安装调试</span>
+        <span class="badge badge-green">¥150</span>
+      </div>
+      <div class="plaza-info">
+        📍 钟楼区花园新村（距您 1.2km）<br>
+        ⏰ 明日 10:00–12:00 可上门<br>
+        📝 新买的洗衣机需要安装，还要处理漏水问题
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <span class="tag">家电安装</span>
+          <span class="tag">上门</span>
+        </div>
+        <button class="btn-sm btn-primary" style="background:var(--orange);color:#fff" onclick="showToast('已提交接单申请！')">立即接单</button>
+      </div>
+    </div>
+    <div class="plaza-card" style="border-left-color:var(--green)">
+      <div class="plaza-header">
+        <span class="plaza-title">🏥 就医陪护</span>
+        <span class="badge badge-orange">¥200</span>
+      </div>
+      <div class="plaza-info">
+        📍 天宁区第一人民医院（距您 2.1km）<br>
+        ⏰ 明日 08:30 出发，预计半天<br>
+        📝 复查，需要陪护协助挂号、取药
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <span class="tag">就医陪护</span>
+          <span class="tag">陪同</span>
+        </div>
+        <button class="btn-sm btn-primary" style="background:var(--green);color:#fff" onclick="showToast('已提交接单申请！')">立即接单</button>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+  </div>
+  <div class="tab-bar worker-tab">
+    <div class="tab-item active" onclick="showScreen('s-worker')"><div class="icon">🏠</div>工作台</div>
+    <div class="tab-item" onclick="showScreen('s-orders')"><div class="icon">📋</div>我的订单</div>
+    <div class="tab-item" onclick="showScreen('s-profile-worker')"><div class="icon">👤</div>我的</div>
+  </div>
+</div>
+
+<!-- ========== 服务提供方个人中心 ========== -->
+<div class="screen" id="s-profile-worker">
+  <div class="status-bar" style="background:#e65c00;"><span>09:41</span><span>⚡ 100%</span></div>
+  <div class="content-area">
+    <div class="profile-header" style="background:linear-gradient(135deg,#f57c00,#e65c00);">
+      <div class="profile-avatar">🧑‍🔧</div>
+      <div>
+        <div class="profile-name">张志明</div>
+        <div class="profile-role">服务提供方（个人）</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span class="badge" style="background:rgba(255,255,255,.25);color:#fff;font-size:11px;">⭐ 4.9 · 132单</span>
+          <span class="badge" style="background:rgba(255,255,255,.25);color:#fff;font-size:11px;">实名认证 ✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">切换角色</div>
+    <div class="switch-role-bar">
+      <div class="role-switch-item" onclick="switchToUser()">
+        <span class="rsi-icon">🙋</span>
+        <div class="rsi-info"><div class="rsi-name">用户 / 服务发起方</div><div class="rsi-desc">切换后可发起服务需求</div></div>
+        <span style="color:var(--sub);">›</span>
+      </div>
+      <div class="role-switch-item active">
+        <span class="rsi-icon">🛠️</span>
+        <div class="rsi-info"><div class="rsi-name">服务提供方（个人）</div><div class="rsi-desc">当前身份 · 工作台接单</div></div>
+        <span style="color:var(--orange);font-weight:700;">✓</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;background:#fff;">
+      <div class="profile-item"><span class="p-icon">📂</span><span class="p-label">我的服务类目</span><span class="p-right" style="color:var(--primary)">数字助老·家居维修</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">🪪</span><span class="p-label">资质认证</span><span class="p-right" style="color:var(--green)">已认证 ✓</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">💰</span><span class="p-label">收入明细</span><span class="p-right">本月 ¥3,200</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">📅</span><span class="p-label">排班设置</span><span class="p-right">工作日 9:00–18:00</span><span class="p-arrow">›</span></div>
+    </div>
+    <div style="margin-top:10px;background:#fff;">
+      <div class="profile-item"><span class="p-icon">📊</span><span class="p-label">服务统计</span><span class="p-right">评分/接单量</span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">⭐</span><span class="p-label">评价管理</span><span class="p-right"></span><span class="p-arrow">›</span></div>
+      <div class="profile-item"><span class="p-icon">⚙️</span><span class="p-label">设置</span><span class="p-right">字号/通知/隐私</span><span class="p-arrow">›</span></div>
+    </div>
+    <div style="height:20px;"></div>
+  </div>
+  <div class="tab-bar worker-tab">
+    <div class="tab-item" onclick="showScreen('s-worker')"><div class="icon">🏠</div>工作台</div>
+    <div class="tab-item" onclick="showScreen('s-orders')"><div class="icon">📋</div>我的订单</div>
+    <div class="tab-item active"><div class="icon">👤</div>我的</div>
+  </div>
+</div>
+
+<!-- ========== 全局弹层（挂在 app 上） ========== -->
+<!-- 二次确认 -->
+<div class="modal-overlay" id="modal-confirm" style="display:none" onclick="closeModal('modal-confirm')">
+  <div class="modal-sheet modal-center" onclick="event.stopPropagation()">
+    <div class="modal-title" id="confirm-title" style="font-size:16px;">确认操作</div>
+    <div style="font-size:14px;color:var(--sub);text-align:center;margin:10px 0 24px;line-height:1.6;" id="confirm-msg"></div>
+    <div style="display:flex;gap:12px;">
+      <button class="btn" style="flex:1;background:#f5f5f5;color:var(--text);" onclick="closeModal('modal-confirm')">取消</button>
+      <button class="btn btn-primary" style="flex:1;" id="confirm-ok-btn">确定</button>
+    </div>
+  </div>
+</div>
+<!-- Toast -->
+<div class="modal-overlay" id="modal-toast" style="display:none;pointer-events:none;">
+  <div class="modal-sheet modal-center" style="pointer-events:auto;">
+    <div style="font-size:14px;color:var(--text);line-height:1.6;text-align:center;" id="toast-msg"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// 页面切换
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's-order-new') { syncDefaultAddrDisplay(); syncEmptyState(); }
+  if (id === 's-address-list') { renderAddressList(); }
+  // 平滑返回顶部
+  var ca = document.querySelector('#' + id + ' .content-area');
+  if (ca) ca.scrollTop = 0;
+}
+
+function closeGuide() {
+  document.getElementById('guide-overlay').style.display = 'none';
+}
+
+function switchToUser() { showScreen('s-profile-user'); }
+
+function enterFromRoleSelect() {
+  // 如果选择了个人服务者或机构，进入工作台；否则进入用户首页
+  var personal = document.getElementById('rsi-personal');
+  var org = document.getElementById('rsi-org');
+  if (personal && personal.classList.contains('selected')) { showScreen('s-worker'); }
+  else if (org && org.classList.contains('selected')) { showScreen('s-worker'); }
+  else { showScreen('s-home'); }
+}
+
+function goRole() { showScreen('s-role'); }
+
+// 角色选择
+function toggleWorkerRole() {
+  var sub = document.getElementById('worker-sub');
+  var arrow = document.getElementById('worker-arrow');
+  var open = sub.classList.toggle('open');
+  arrow.textContent = open ? '▾' : '▸';
+  document.getElementById('rc-worker').classList.toggle('selected', open);
+}
+function togglePersonalCats() {
+  var wrap = document.getElementById('personal-cats-wrap');
+  var item = document.getElementById('rsi-personal');
+  var isOpen = wrap.style.display !== 'none';
+  if (isOpen) { wrap.style.display = 'none'; item.classList.remove('selected'); }
+  else {
+    wrap.style.display = 'block'; item.classList.add('selected');
+    document.getElementById('org-cert-wrap').style.display = 'none';
+    document.getElementById('rsi-org').classList.remove('selected');
+  }
+}
+function toggleOrgCert() {
+  var wrap = document.getElementById('org-cert-wrap');
+  var item = document.getElementById('rsi-org');
+  var isOpen = wrap.style.display !== 'none';
+  if (isOpen) { wrap.style.display = 'none'; item.classList.remove('selected'); }
+  else {
+    wrap.style.display = 'block'; item.classList.add('selected');
+    document.getElementById('personal-cats-wrap').style.display = 'none';
+    document.getElementById('rsi-personal').classList.remove('selected');
+  }
+}
+function toggleCat(el, certType) {
+  el.classList.toggle('selected');
+  var uploadArea = document.getElementById('cert-upload-area');
+  var selected = document.querySelectorAll('#personal-cats .category-chip-sm.selected');
+  if (selected.length === 0) { uploadArea.style.display = 'none'; return; }
+  uploadArea.style.display = 'block';
+  var needIdcard = false, needLicense = false, needHealth = false;
+  selected.forEach(function(chip) {
+    var match = chip.getAttribute('onclick').match(/,'([^']+)'/);
+    if (match) {
+      if (match[1] === 'idcard') needIdcard = true;
+      if (match[1] === 'license') needLicense = true;
+      if (match[1] === 'health') needHealth = true;
+    }
+  });
+  document.getElementById('cert-idcard').style.display = needIdcard ? 'block' : 'none';
+  document.getElementById('cert-license').style.display = needLicense ? 'block' : 'none';
+  document.getElementById('cert-health').style.display = needHealth ? 'block' : 'none';
+}
+
+// 发起服务
+function selectTarget(el) {
+  document.querySelectorAll('#service-target-group .service-target-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectCat(el) {
+  document.querySelectorAll('#s-order-new .category-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  var cat = el.dataset.cat;
+  document.querySelectorAll('.sub-list').forEach(s => s.classList.remove('active'));
+  var target = document.querySelector('.sub-list[data-sub="' + cat + '"]');
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.sub-item').forEach(i => i.classList.remove('selected'));
+  updatePriceSummary(cat + ' · 请选择具体服务', '¥—');
+}
+function selectSub(el, label, price) {
+  document.querySelectorAll('.sub-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePriceSummary(label, price);
+}
+function updatePriceSummary(label, price) {
+  var labelEl = document.getElementById('price-label');
+  var amountEl = document.getElementById('price-amount');
+  if (labelEl) labelEl.textContent = label;
+  if (amountEl) amountEl.textContent = price !== '¥—' ? price : '¥—';
+}
+function toggleTimeSlot(el) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// 自定义时间选择器
+var _tpSelectedDate = null;
+var _tpSelectedHour = null;
+
+function openTimePicker(el) {
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  _tpSelectedDate = null; _tpSelectedHour = null;
+  tpGoStep(1); _buildDateGrid(); _updateTpPreview();
+  document.getElementById('tp-confirm-btn').disabled = true;
+  document.getElementById('modal-timepicker').style.display = 'flex';
+}
+function tpGoStep(n) {
+  document.getElementById('tp-step1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('tp-step2').style.display = n === 2 ? 'block' : 'none';
+  var t1 = document.getElementById('tp-step1-tab'), t2 = document.getElementById('tp-step2-tab');
+  if (n === 1) { t1.style.background = 'var(--primary)'; t1.style.color = '#fff'; t2.style.background = '#f5f5f5'; t2.style.color = 'var(--sub)'; }
+  else { t2.style.background = 'var(--primary)'; t2.style.color = '#fff'; t1.style.background = '#f5f5f5'; t1.style.color = 'var(--sub)'; _buildTimeGrid(); }
+}
+function _buildDateGrid() {
+  var grid = document.getElementById('tp-date-grid'); grid.innerHTML = '';
+  var now = new Date();
+  var weekDays = ['周日','周一','周二','周三','周四','周五','周六'];
+  var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  for (var i = 0; i < 14; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    var key = d.getFullYear() + '-' + _p2(d.getMonth()+1) + '-' + _p2(d.getDate());
+    var label = i === 0 ? '今天' : i === 1 ? '明天' : weekDays[d.getDay()];
+    var sub = months[d.getMonth()] + _p2(d.getDate()) + '日';
+    var cell = document.createElement('div');
+    cell.className = 'tp-cell' + (key === _tpSelectedDate ? ' selected' : '');
+    cell.dataset.date = key;
+    cell.innerHTML = '<div style="font-weight:600;">' + label + '</div><div style="font-size:10px;color:var(--sub);">' + sub + '</div>';
+    cell.onclick = function() {
+      _tpSelectedDate = this.dataset.date; _tpSelectedHour = null;
+      document.querySelectorAll('#tp-date-grid .tp-cell').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected'); _updateTpPreview();
+      setTimeout(function(){ tpGoStep(2); }, 180);
+    };
+    grid.appendChild(cell);
+  }
+}
+function _buildTimeGrid() {
+  var grid = document.getElementById('tp-time-grid'); grid.innerHTML = '';
+  var now = new Date();
+  var isToday = _tpSelectedDate === (now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate()));
+  var defaultHour = now.getHours() + 1; if (defaultHour >= 24) defaultHour = 23;
+  for (var h = 8; h <= 21; h++) {
+    var disabled = isToday && h <= now.getHours();
+    var cell = document.createElement('div');
+    cell.className = 'tp-cell' + (disabled ? ' disabled' : '') + (h === _tpSelectedHour ? ' selected' : '');
+    cell.dataset.hour = h;
+    var ampm = h < 12 ? '上午' : h < 18 ? '下午' : '晚上';
+    cell.innerHTML = '<div style="font-weight:600;">' + _p2(h) + ':00</div><div style="font-size:10px;color:var(--sub);">' + ampm + '</div>';
+    if (!disabled) {
+      if (_tpSelectedHour === null && h === defaultHour) { cell.classList.add('selected'); _tpSelectedHour = h; _updateTpPreview(); }
+      cell.onclick = function() {
+        _tpSelectedHour = parseInt(this.dataset.hour);
+        document.querySelectorAll('#tp-time-grid .tp-cell').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected'); _updateTpPreview();
+      };
+    }
+    grid.appendChild(cell);
+  }
+  _updateTpPreview();
+}
+function _updateTpPreview() {
+  var preview = document.getElementById('tp-preview');
+  var btn = document.getElementById('tp-confirm-btn');
+  if (!_tpSelectedDate) { preview.textContent = '请先选择日期'; btn.disabled = true; return; }
+  if (_tpSelectedHour === null) { preview.textContent = _formatDateLabel(_tpSelectedDate) + ' · 请选择时间'; btn.disabled = true; return; }
+  preview.innerHTML = '<span style="color:var(--primary);font-weight:600;">' + _formatDateLabel(_tpSelectedDate) + ' ' + _p2(_tpSelectedHour) + ':00</span>';
+  btn.disabled = false;
+}
+function _formatDateLabel(dateStr) {
+  var now = new Date();
+  var todayKey = now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate());
+  var tmrKey = now.getFullYear() + '-' + _p2(now.getMonth()+1) + '-' + _p2(now.getDate()+1);
+  if (dateStr === todayKey) return '今天';
+  if (dateStr === tmrKey) return '明天';
+  var d = new Date(dateStr);
+  var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  return months[d.getMonth()] + d.getDate() + '日';
+}
+function confirmTimePicker() {
+  if (!_tpSelectedDate || _tpSelectedHour === null) return;
+  var label = _formatDateLabel(_tpSelectedDate) + ' ' + _p2(_tpSelectedHour) + ':00';
+  var slot = document.getElementById('slot-custom');
+  slot.innerHTML = '🗓️ ' + label + '<br><span style="font-size:11px;color:var(--sub)">自定义时间</span>';
+  closeModal('modal-timepicker');
+}
+function _p2(n) { return n < 10 ? '0' + n : '' + n; }
+
+// 地址管理
+var addresses = [
+  { id: 1, label: '妈妈的家', addr: '常州市钟楼区 × × 小区 1栋302', contact: '张阿姨', phone: '138****6789', isDefault: true },
+  { id: 2, label: '爸爸的家', addr: '常州市天宁区 × × 花园 5栋101', contact: '张叔叔', phone: '139****1234', isDefault: false },
+  { id: 3, label: '我的家',   addr: '常州市新北区 × × 公馆 8栋502', contact: '薯条',   phone: '158****5678', isDefault: false }
+];
+var _addrFormEditId = null;
+
+function renderAddressList() {
+  var container = document.getElementById('addr-list-container'); if (!container) return;
+  if (addresses.length === 0) { container.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--sub);font-size:14px;">暂无地址，点击右上角「新增」添加</div>'; return; }
+  container.innerHTML = addresses.map(function(a) {
+    return '<div class="addr-card' + (a.isDefault ? ' is-default' : '') + '" onclick="selectThisAddr(' + a.id + ')">' +
+      '<div class="addr-card-top">' + (a.isDefault ? '<span class="addr-card-label">默认</span>' : '') +
+      '<span class="addr-card-tag">' + a.label + '</span>' + (a.isDefault ? '<span class="addr-default-badge">✓ 默认地址</span>' : '') + '</div>' +
+      '<div class="addr-card-addr">' + a.addr + '</div>' +
+      '<div class="addr-card-contact">' + a.contact + ' · ' + a.phone + '</div>' +
+      '<div class="addr-card-actions" onclick="event.stopPropagation()">' +
+      (!a.isDefault ? '<span class="addr-action default-btn" onclick="setDefaultAddr(' + a.id + ')">设为默认</span>' : '') +
+      '<span class="addr-action" onclick="editAddr(' + a.id + ')">编辑</span>' +
+      '<span class="addr-action" style="color:var(--red);" onclick="deleteAddr(' + a.id + ')">删除</span>' +
+      '</div></div>';
+  }).join('');
+}
+function selectThisAddr(id) {
+  addresses.forEach(function(x) { x.isDefault = (x.id === id); });
+  syncDefaultAddrDisplay(); syncEmptyState(); renderAddressList(); showScreen('s-order-new');
+}
+function setDefaultAddr(id) {
+  addresses.forEach(function(a) { a.isDefault = (a.id === id); });
+  renderAddressList(); syncDefaultAddrDisplay();
+}
+function editAddr(id) {
+  var a = addresses.find(function(x) { return x.id === id; }); if (!a) return;
+  _addrFormEditId = id;
+  document.getElementById('addr-form-title').textContent = '编辑地址';
+  document.querySelectorAll('.addr-tag-chip').forEach(function(chip) {
+    chip.classList.remove('selected');
+    if (chip.textContent.trim() === a.label) chip.classList.add('selected');
+  });
+  document.getElementById('addr-form-label').value = a.label;
+  document.getElementById('addr-form-addr').value = a.addr;
+  document.getElementById('addr-form-contact').value = a.contact;
+  document.getElementById('addr-form-phone').value = a.phone;
+  showScreen('s-address-form');
+}
+function deleteAddr(id) {
+  var a = addresses.find(function(x) { return x.id === id; }); if (!a) return;
+  var wasDefault = a.isDefault, delId = id;
+  document.getElementById('confirm-title').textContent = '删除地址';
+  document.getElementById('confirm-msg').textContent = '确定要删除地址「' + a.label + '」吗？';
+  document.getElementById('confirm-ok-btn').onclick = function() {
+    closeModal('modal-confirm');
+    addresses = addresses.filter(function(x) { return x.id !== delId; });
+    if (wasDefault && addresses.length > 0) addresses[0].isDefault = true;
+    renderAddressList(); syncDefaultAddrDisplay(); syncEmptyState();
+  };
+  document.getElementById('modal-confirm').style.display = 'flex';
+}
+function showToast(msg) {
+  var toast = document.getElementById('modal-toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.style.display = 'flex';
+  setTimeout(function() { closeModal('modal-toast'); }, 1500);
+}
+function saveAddress() {
+  var label = document.getElementById('addr-form-label').value.trim();
+  var addr  = document.getElementById('addr-form-addr').value.trim();
+  var contact = document.getElementById('addr-form-contact').value.trim();
+  var phone = document.getElementById('addr-form-phone').value.trim();
+  if (!addr) { showToast('请填写详细地址'); return; }
+  if (!contact) { showToast('请填写联系人'); return; }
+  if (!phone || !/^1\d{10}$/.test(phone)) { showToast('请填写正确的手机号'); return; }
+  if (_addrFormEditId !== null) {
+    addresses.forEach(function(a) { if (a.id === _addrFormEditId) { a.label = label; a.addr = addr; a.contact = contact; a.phone = phone; } });
+  } else {
+    var isFirst = addresses.length === 0;
+    addresses.push({ id: Date.now(), label: label, addr: addr, contact: contact, phone: phone, isDefault: isFirst });
+  }
+  _addrFormEditId = null;
+  document.getElementById('addr-form-title').textContent = '新增地址';
+  document.querySelectorAll('.addr-tag-chip').forEach(function(c) { c.classList.remove('selected'); });
+  document.querySelectorAll('.addr-tag-chip')[0].classList.add('selected');
+  document.getElementById('addr-form-label').value = '妈妈的家';
+  document.getElementById('addr-form-addr').value = '';
+  document.getElementById('addr-form-contact').value = '';
+  document.getElementById('addr-form-phone').value = '';
+  showScreen('s-address-list'); renderAddressList(); syncDefaultAddrDisplay(); syncEmptyState();
+}
+function selectAddrTag(el, label) {
+  document.querySelectorAll('.addr-tag-chip').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('addr-form-label').value = label;
+}
+function goBackFromAddrForm() {
+  _addrFormEditId = null;
+  document.getElementById('addr-form-title').textContent = '新增地址';
+  document.querySelectorAll('.addr-tag-chip').forEach(function(c) { c.classList.remove('selected'); });
+  document.querySelectorAll('.addr-tag-chip')[0].classList.add('selected');
+  document.getElementById('addr-form-label').value = '妈妈的家';
+  document.getElementById('addr-form-addr').value = '';
+  document.getElementById('addr-form-contact').value = '';
+  document.getElementById('addr-form-phone').value = '';
+  renderAddressList(); showScreen('s-address-list');
+}
+function syncDefaultAddrDisplay() {
+  var def = addresses.find(function(a) { return a.isDefault; }) || addresses[0];
+  if (def) {
+    var card = document.getElementById('addr-default-card'); if (card) card.style.display = 'flex';
+    var emptyCard = document.getElementById('addr-empty-card'); if (emptyCard) emptyCard.style.display = 'none';
+    var addrEl = document.getElementById('addr-display-addr'); if (addrEl) addrEl.textContent = def.addr;
+    var labelEl = document.getElementById('addr-display-label'); if (labelEl) labelEl.textContent = def.label;
+  }
+}
+function syncEmptyState() {
+  if (addresses.length === 0) {
+    var card = document.getElementById('addr-default-card'); if (card) card.style.display = 'none';
+    var emptyCard = document.getElementById('addr-empty-card'); if (emptyCard) emptyCard.style.display = 'flex';
+  }
+}
+
+// 订单 Tab
+function switchOrderTab(el) {
+  document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 支付
+function showOrderConfirm() {
+  var amt = document.getElementById('price-amount');
+  var modalPrice = document.getElementById('pay-modal-price');
+  if (amt && modalPrice) modalPrice.textContent = amt.textContent;
+  document.getElementById('modal-pay').style.display = 'flex';
+}
+function payNow(method, el) {
+  document.querySelectorAll('#modal-pay [data-pay]').forEach(function(item) {
+    item.style.borderColor = 'var(--border)'; item.style.background = '#fff';
+    var check = item.querySelector('.pay-check'); if (check) check.style.display = 'none';
+  });
+  el.style.borderColor = 'var(--primary)'; el.style.background = '#eef3fb';
+  var chk = el.querySelector('.pay-check'); if (chk) chk.style.display = '';
+}
+
+// 关闭弹层
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// 协议
+function toggleAgree() { document.getElementById('agree-checkbox').classList.toggle('checked'); }
+function showAgreement(type) {
+  var modal = document.getElementById('modal-agreement');
+  var title = document.getElementById('agreement-title');
+  var body = document.getElementById('agreement-body');
+  var contentEl = document.getElementById('agreement-' + type + '-content');
+  title.textContent = type === 'user' ? '用户协议' : '隐私政策';
+  body.innerHTML = contentEl.innerHTML;
+  modal.style.display = 'flex';
+}
+function closeAgreement() { document.getElementById('modal-agreement').style.display = 'none'; }
+function showWxBindModal() { document.getElementById('modal-wx-bind').style.display = 'flex'; }
+function closeWxBindModal() { document.getElementById('modal-wx-bind').style.display = 'none'; }
+
+// 登录切换
+function switchToSmsLogin() {
+  document.getElementById('login-panel-0').innerHTML = `
+    <div style="margin-bottom:12px;">
+      <label class="label">手机号</label>
+      <div class="sms-row">
+        <input class="input-field" placeholder="请输入手机号" style="flex:1" />
+        <button class="sms-btn">发送验证码</button>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label class="label">验证码</label>
+      <input class="input-field" placeholder="请输入6位验证码" maxlength="6" />
+      <div class="annotation">60秒后可重新发送</div>
+    </div>
+    <button class="btn btn-primary" onclick="goRole()">登录 / 注册</button>
+    <div style="text-align:center;margin-top:12px;">
+      <span style="font-size:13px;color:var(--primary);cursor:pointer;" onclick="switchToOneKeyLogin()">返回一键登录</span>
+    </div>`;
+}
+function switchToPwdLogin() {
+  document.getElementById('login-panel-0').innerHTML = `
+    <div style="margin-bottom:12px;">
+      <label class="label">手机号</label>
+      <input class="input-field" placeholder="请输入手机号" />
+    </div>
+    <div style="margin-bottom:16px;">
+      <label class="label">密码</label>
+      <input class="input-field" type="password" placeholder="请输入密码" />
+    </div>
+    <button class="btn btn-primary" onclick="goRole()">登录</button>
+    <div style="text-align:right;margin-top:8px;">
+      <span style="font-size:13px;color:var(--primary);cursor:pointer;">忘记密码？</span>
+    </div>
+    <div style="text-align:center;margin-top:12px;">
+      <span style="font-size:13px;color:var(--primary);cursor:pointer;" onclick="switchToOneKeyLogin()">返回一键登录</span>
+    </div>`;
+}
+function switchToOneKeyLogin() {
+  document.getElementById('login-panel-0').innerHTML = `
+    <div class="notice">📱 检测到您当前使用中国联通号码 <b>186****8888</b></div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="goRole()">一键登录 186****8888</button>
+    </div>
+    <div class="annotation" style="text-align:center;margin-top:12px;">运营商授权读取当前SIM卡号码，一键完成登录</div>`;
+}
+
+// 修正状态栏时间
+(function() {
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes();
+  var t = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  document.querySelectorAll('.status-bar span:first-child').forEach(function(el) { el.textContent = t; });
+})();
+</script>
+</body>
+</html>
