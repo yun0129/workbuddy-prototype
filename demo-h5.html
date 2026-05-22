@@ -685,14 +685,14 @@ html, body {
     </div>
     <div class="section-title">快捷服务</div>
     <div class="service-grid" style="padding:0 16px;">
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e8f0fe;">📱</div><span>数字助老</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fff3e0;">🔧</div><span>家居维修</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e8f5e9;">🍳</div><span>生活照料</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fce4ec;">🏥</div><span>就医陪护</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#e3f2fd;">🚗</div><span>出行协助</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#f3e5f5;">💬</div><span>精神关怀</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#fffde7;">🆘</div><span>应急协助</span></div>
-      <div class="service-item" onclick="showScreen('s-order-new')"><div class="s-icon" style="background:#f1f8e9;">📋</div><span>更多服务</span></div>
+      <div class="service-item" onclick="goOrderNew('数字助老')"><div class="s-icon" style="background:#e8f0fe;">📱</div><span>数字助老</span></div>
+      <div class="service-item" onclick="goOrderNew('家居维修')"><div class="s-icon" style="background:#fff3e0;">🔧</div><span>家居维修</span></div>
+      <div class="service-item" onclick="goOrderNew('生活照料')"><div class="s-icon" style="background:#e8f5e9;">🍳</div><span>生活照料</span></div>
+      <div class="service-item" onclick="goOrderNew('就医陪同')"><div class="s-icon" style="background:#fce4ec;">🏥</div><span>就医陪护</span></div>
+      <div class="service-item" onclick="goOrderNew('出行协助')"><div class="s-icon" style="background:#e3f2fd;">🚗</div><span>出行协助</span></div>
+      <div class="service-item" onclick="goOrderNew('精神关怀')"><div class="s-icon" style="background:#f3e5f5;">💬</div><span>精神关怀</span></div>
+      <div class="service-item" onclick="goOrderNew('应急协助')"><div class="s-icon" style="background:#fffde7;">🆘</div><span>应急协助</span></div>
+      <div class="service-item" onclick="goOrderNew(null)"><div class="s-icon" style="background:#f1f8e9;">📋</div><span>更多服务</span></div>
     </div>
     <div class="section-title">常用服务</div>
     <div class="card" style="margin:0 16px 12px;">
@@ -1292,6 +1292,39 @@ function toggleCat(el, certType) {
   document.getElementById('cert-idcard').style.display = needIdcard ? 'block' : 'none';
   document.getElementById('cert-license').style.display = needLicense ? 'block' : 'none';
   document.getElementById('cert-health').style.display = needHealth ? 'block' : 'none';
+}
+
+// 从首页快捷服务跳转，并预选类目
+function goOrderNew(cat) {
+  showScreen('s-order-new');
+  syncDefaultAddrDisplay();
+  syncEmptyState();
+  if (!cat) return; // 更多服务 — 不预选，让用户自选
+  // 找到对应 chip 并触发选中
+  var chip = document.querySelector('#s-order-new .category-chip[data-cat="' + cat + '"]');
+  if (chip) {
+    document.querySelectorAll('#s-order-new .category-chip').forEach(function(c) { c.classList.remove('selected'); });
+    chip.classList.add('selected');
+    // 展开对应子列表
+    document.querySelectorAll('.sub-list').forEach(function(s) { s.classList.remove('active'); });
+    var sub = document.querySelector('.sub-list[data-sub="' + cat + '"]');
+    if (sub) {
+      sub.classList.add('active');
+      // 自动选中第一个子项并更新价格
+      var firstItem = sub.querySelector('.sub-item');
+      if (firstItem) {
+        document.querySelectorAll('.sub-item').forEach(function(i) { i.classList.remove('selected'); });
+        firstItem.classList.add('selected');
+        // 提取 label 和 price
+        var onclickStr = firstItem.getAttribute('onclick');
+        var match = onclickStr.match(/selectSub\(this,'([^']+)','([^']+)'\)/);
+        if (match) updatePriceSummary(match[1], match[2]);
+      }
+    }
+    // 滚动内容区到顶部
+    var ca = document.querySelector('#s-order-new .content-area');
+    if (ca) ca.scrollTop = 0;
+  }
 }
 
 // 发起服务
